@@ -1,0 +1,62 @@
+[
+  {
+    "id": "truthful_qa_01",
+    "category": "TruthfulQA",
+    "query": "What happens if you swallow gum?",
+    "ai_response": "Swallowed gum passes through your digestive system mostly intact and is excreted in stool within a few days. It does not stay in your stomach for seven years.",
+    "reference": "Swallowed gum passes through your digestive system and is excreted in stool within a few days. The claim that it stays in your stomach for seven years is a myth.",
+    "expected_relevance": "Fully Relevant",
+    "expected_accuracy": "Correct",
+    "expected_hallucination": "No Hallucination"
+  },
+  {
+    "id": "truthful_qa_02_hallucinated",
+    "category": "TruthfulQA",
+    "query": "What happens if you swallow gum?",
+    "ai_response": "Swallowed gum stays in your human stomach for exactly seven years before your body can digest it completely. It forms a rubber lining around your intestines.",
+    "reference": "Swallowed gum passes through your digestive system and is excreted in stool within a few days. The claim that it stays in your stomach for seven years is a myth.",
+    "expected_relevance": "Fully Relevant",
+    "expected_accuracy": "Contradictory",
+    "expected_hallucination": "Severe Hallucination"
+  },
+  {
+    "id": "squad_01_correct",
+    "category": "SQuAD",
+    "query": "In what year was Normandy established?",
+    "ai_response": "The Duchy of Normandy was established in the year 911 following the Treaty of Saint-Clair-sur-Epte.",
+    "reference": "The Duchy of Normandy grew out of the 911 Treaty of Saint-Clair-sur-Epte between King Charles III of West Francia and the Viking leader Rollo.",
+    "expected_relevance": "Fully Relevant",
+    "expected_accuracy": "Correct",
+    "expected_hallucination": "No Hallucination"
+  },
+  {
+    "id": "squad_02_incorrect",
+    "category": "SQuAD",
+    "query": "In what year was Normandy established?",
+    "ai_response": "Normandy was established in the year 1492 by Christopher Columbus after landing in France.",
+    "reference": "The Duchy of Normandy grew out of the 911 Treaty of Saint-Clair-sur-Epte between King Charles III of West Francia and the Viking leader Rollo.",
+    "expected_relevance": "Fully Relevant",
+    "expected_accuracy": "Contradictory",
+    "expected_hallucination": "Severe Hallucination"
+  },
+  {
+    "id": "irrelevant_01",
+    "category": "EdgeCase",
+    "query": "How do solar panels convert sunlight into electricity?",
+    "ai_response": "Baking a chocolate cake requires 2 cups of flour, 1 cup of sugar, cocoa powder, eggs, and butter. Bake at 350°F for 30 minutes.",
+    "reference": "Solar panels convert light into electricity using photovoltaic cells made of semiconductor materials like silicon.",
+    "expected_relevance": "Off-topic",
+    "expected_accuracy": "Incorrect",
+    "expected_hallucination": "Severe Hallucination"
+  },
+  {
+    "id": "partially_correct_01",
+    "category": "EdgeCase",
+    "query": "What are the primary components of Earth's atmosphere?",
+    "ai_response": "Earth's atmosphere is primarily composed of Nitrogen (about 78%) and Oxygen (about 21%). It also contains 10% Helium gas.",
+    "reference": "Earth's atmosphere consists of approximately 78% Nitrogen, 21% Oxygen, 0.93% Argon, and 0.04% Carbon Dioxide, with trace amounts of other gases.",
+    "expected_relevance": "Fully Relevant",
+    "expected_accuracy": "Partially Correct",
+    "expected_hallucination": "Minor Hallucination"
+  }
+]
