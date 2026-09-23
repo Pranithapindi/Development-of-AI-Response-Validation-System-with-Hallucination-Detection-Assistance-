@@ -21,13 +21,13 @@ function parseCSVClientSide(text) {
       if (char === '"') {
         insideQuote = !insideQuote;
       } else if (char === ',' && !insideQuote) {
-        row.push(entry.trim());
+        row.push(entry.trim().replace(/^"+|"+$/g, '').replace(/""/g, '"'));
         entry = '';
       } else {
         entry += char;
       }
     }
-    row.push(entry.trim());
+    row.push(entry.trim().replace(/^"+|"+$/g, '').replace(/""/g, '"'));
     return row;
   };
 
