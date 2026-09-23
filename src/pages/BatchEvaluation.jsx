@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   Upload, FileText, Download, CheckCircle, AlertTriangle, XCircle,
-  Search, Filter, Eye, RefreshCw, Layers, ShieldCheck, HelpCircle, X,
+  Search, Filter, Eye, RefreshCw, Layers, ShieldCheck, HelpCircle, X, FlaskConical,
 } from 'lucide-react';
 import { uploadBatchCSV, downloadSampleCSV } from '../services/api.js';
 
@@ -267,11 +267,29 @@ export default function BatchEvaluation() {
             </div>
           )}
 
-          <div className="flex justify-end gap-3">
+          <div className="flex justify-end gap-3 flex-wrap">
+            <button
+              onClick={() => {
+                const sampleText = `question,ai_response,reference
+"Who invented the World Wide Web and when?","Tim Berners-Lee invented the World Wide Web in 1989 while working at CERN.","Tim Berners-Lee invented the World Wide Web in 1989 at CERN."
+"Can antibiotics effectively cure influenza or the common cold?","Antibiotics like amoxicillin and azithromycin kill cold viruses within 24 hours.","Antibiotics are solely effective against bacterial infections and do not affect viruses like influenza or the common cold."
+"Why did Albert Einstein receive the Nobel Prize?","Albert Einstein received the 1921 Nobel Prize in Physics for developing the theory of general relativity.","The Nobel Prize in Physics 1921 was awarded to Albert Einstein for his discovery of the law of the photoelectric effect, not relativity."
+"What is the boiling point of water at sea level?","At standard sea level atmospheric pressure, pure water boils at 100 degrees Celsius or 212 degrees Fahrenheit.","Standard atmospheric pressure at sea level corresponds to a boiling point for pure water of 100 degrees Celsius."
+"Explain the cause of World War I, key battles, and the Treaty of Versailles outcome.","World War I started in 1914.","World War I was triggered by the assassination of Archduke Franz Ferdinand in 1914. Key battles included the Somme and Verdun. The Treaty of Versailles imposed harsh penalties on Germany in 1919."`;
+                const demoBlob = new File([sampleText], "sample_batch_5_questions.csv", { type: "text/csv" });
+                setFile(demoBlob);
+                setTimeout(() => runBatchProcess(), 100);
+              }}
+              className="btn-secondary text-xs flex items-center gap-2"
+              disabled={isProcessing}
+            >
+              <FlaskConical size={15} className="text-violet-500" />
+              Load & Run 5 Demo Scenarios
+            </button>
             {file && (
               <button
                 onClick={resetBatch}
-                className="btn-secondary"
+                className="btn-secondary text-xs"
                 disabled={isProcessing}
               >
                 Clear File
@@ -280,7 +298,7 @@ export default function BatchEvaluation() {
             <button
               onClick={runBatchProcess}
               disabled={!file || isProcessing}
-              className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary text-xs disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isProcessing ? 'Processing Batch...' : 'Start Batch Evaluation'}
             </button>
