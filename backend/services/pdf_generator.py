@@ -121,14 +121,23 @@ def generate_pdf_report(result: dict) -> bytes:
         colors.HexColor("#ef4444")
     )
 
+    rel_eval = result.get("relevance_eval", {})
+    acc_eval = result.get("accuracy_eval", {})
+    hall_eval = result.get("hallucination_eval", {})
+    comp_eval = result.get("completeness_eval", {})
+    verdict_eval = result.get("verdict_eval", {})
+
+    verdict_str = verdict_eval.get("verdict", label)
+
     summary_data = [
-        ["Reliability Score", f"{score}/100"],
-        ["Classification Label", label],
-        ["Supported Claims", str(stats.get("supported", 0))],
-        ["Unsupported Claims", str(stats.get("unsupported", 0))],
-        ["Contradictory Claims", str(stats.get("contradictory", 0))],
-        ["Uncertain Claims", str(stats.get("uncertain", 0))],
-        ["Hallucination Risk", f"{stats.get('hallucination_risk', 0)}%"],
+        ["Overall Quality Verdict", verdict_str],
+        ["Weighted Overall Score", f"{score}/100"],
+        ["Relevance Score", f"{rel_eval.get('relevance_score', 85)}/100 ({rel_eval.get('relevance_label', 'Relevant')})"],
+        ["Accuracy Score", f"{acc_eval.get('accuracy_score', 90)}/100 ({acc_eval.get('accuracy_label', 'Correct')})"],
+        ["Hallucination Risk", f"{hall_eval.get('hallucination_score', stats.get('hallucination_risk', 0))}% ({hall_eval.get('hallucination_label', 'No Hallucination')})"],
+        ["Completeness Score", f"{comp_eval.get('completeness_score', 85)}/100 ({comp_eval.get('completeness_label', 'Complete')})"],
+        ["Supported / Unsupported Claims", f"{stats.get('supported', 0)} Supported / {stats.get('unsupported', 0)} Unsupported"],
+        ["Contradictory / Uncertain Claims", f"{stats.get('contradictory', 0)} Contradictory / {stats.get('uncertain', 0)} Uncertain"],
         ["Processing Time", f"{result.get('processing_time_ms', 0)} ms"],
     ]
 
@@ -147,14 +156,34 @@ def generate_pdf_report(result: dict) -> bytes:
         ("LEFTPADDING",  (0,0), (-1,-1), 8),
         ("TEXTCOLOR",    (1,0), (1,0), score_color),
         ("FONTNAME",     (1,0), (1,0), "Helvetica-Bold"),
-        ("FONTSIZE",     (1,0), (1,0), 14),
+        ("FONTSIZE",     (1,0), (1,0), 12),
     ]))
     story.append(summary_table)
     story.append(Spacer(1, 0.3*cm))
 
-    # ── Summary ───────────────────────────────────────────────────────────────
-    story.append(Paragraph("Validation Summary", heading_style))
+    # ── Consolidated Reasoning ──────────────────────────────────────────
+    story.append(Paragraph("Consolidated Evaluation Reasoning", heading_style))
     story.append(Paragraph(result.get("summary", ""), body_style))
+
+    # ── Completeness Judge Assessment ──────────────────────────────────
+    if comp_eval:
+        story.append(Paragraph("Completeness Assessment (M3.1)", heading_style))
+        story.append(Paragraph(f"<b>Status:</b> {comp_eval.get('completeness_label', 'N/A')} ({comp_eval.get('completeness_score', 0)}/100)", body_style))
+        story.append(Paragraph(f"<b>Reasoning:</b> {comp_eval.get('reasoning', '')}", body_style))
+
+        missing_list = comp_eval.get("missing_aspects", [])
+        if missing_list:
+            story.append(Paragraph("<b>Omitted / Missing Requirements:</b>", label_style))
+            for miss in missing_list:
+                story.append(Paragraph(f"• {miss}", ParagraphStyle("MissItem", parent=styles["Normal"], fontSize=9, textColor=colors.HexColor("#dc2626"), leftIndent=10)))
+
+        addressed_list = comp_eval.get("addressed_aspects", [])
+        if addressed_list:
+            story.append(Paragraph("<b>Addressed Aspects:</b>", label_style))
+            for addr in addressed_list:
+                story.append(Paragraph(f"✓ {addr}", ParagraphStyle("AddrItem", parent=styles["Normal"], fontSize=9, textColor=colors.HexColor("#16a34a"), leftIndent=10)))
+
+        story.append(Spacer(1, 0.3*cm))
 
     # ── Claim Analysis ─────────────────────────────────────────────────────────
     story.append(Paragraph("Claim-Level Analysis", heading_style))

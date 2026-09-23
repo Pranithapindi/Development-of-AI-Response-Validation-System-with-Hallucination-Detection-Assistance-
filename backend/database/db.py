@@ -68,9 +68,19 @@ def _ensure_sqlite():
             label        TEXT,
             summary      TEXT,
             claims_json  TEXT,
-            stats_json   TEXT
+            stats_json   TEXT,
+            relevance_json    TEXT,
+            accuracy_json     TEXT,
+            hallucination_json TEXT,
+            completeness_json  TEXT,
+            verdict_json       TEXT
         )
     """)
+    # Ensure columns exist if table was created in older version
+    existing_cols = [row[1] for row in conn.execute("PRAGMA table_info(validations)").fetchall()]
+    for col in ["relevance_json", "accuracy_json", "hallucination_json", "completeness_json", "verdict_json"]:
+        if col not in existing_cols:
+            conn.execute(f"ALTER TABLE validations ADD COLUMN {col} TEXT")
     conn.commit()
     conn.close()
 
@@ -101,8 +111,9 @@ def save_validation(result: Dict[str, Any]) -> str:
         conn.execute(
             """INSERT OR REPLACE INTO validations
                (id, timestamp, query, ai_response, reference,
-                overall_score, label, summary, claims_json, stats_json)
-               VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                overall_score, label, summary, claims_json, stats_json,
+                relevance_json, accuracy_json, hallucination_json, completeness_json, verdict_json)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
             (
                 record_id,
                 result.get("timestamp", datetime.utcnow().isoformat()),
@@ -114,6 +125,11 @@ def save_validation(result: Dict[str, Any]) -> str:
                 result.get("summary", ""),
                 json.dumps(result.get("claims", [])),
                 json.dumps(result.get("stats", {})),
+                json.dumps(result.get("relevance_eval", {})),
+                json.dumps(result.get("accuracy_eval", {})),
+                json.dumps(result.get("hallucination_eval", {})),
+                json.dumps(result.get("completeness_eval", {})),
+                json.dumps(result.get("verdict_eval", {})),
             )
         )
         conn.commit()
@@ -140,6 +156,11 @@ def get_all_history() -> List[Dict]:
             d = dict(row)
             d["claims"] = json.loads(d.get("claims_json") or "[]")
             d["stats"]  = json.loads(d.get("stats_json")  or "{}")
+            if d.get("relevance_json"):    d["relevance_eval"]    = json.loads(d["relevance_json"])
+            if d.get("accuracy_json"):     d["accuracy_eval"]     = json.loads(d["accuracy_json"])
+            if d.get("hallucination_json"):d["hallucination_eval"] = json.loads(d["hallucination_json"])
+            if d.get("completeness_json"): d["completeness_eval"] = json.loads(d["completeness_json"])
+            if d.get("verdict_json"):      d["verdict_eval"]      = json.loads(d["verdict_json"])
             results.append(d)
         return results
 
@@ -162,6 +183,11 @@ def get_validation(record_id: str) -> Optional[Dict]:
         d = dict(row)
         d["claims"] = json.loads(d.get("claims_json") or "[]")
         d["stats"]  = json.loads(d.get("stats_json")  or "{}")
+        if d.get("relevance_json"):    d["relevance_eval"]    = json.loads(d["relevance_json"])
+        if d.get("accuracy_json"):     d["accuracy_eval"]     = json.loads(d["accuracy_json"])
+        if d.get("hallucination_json"):d["hallucination_eval"] = json.loads(d["hallucination_json"])
+        if d.get("completeness_json"): d["completeness_eval"] = json.loads(d["completeness_json"])
+        if d.get("verdict_json"):      d["verdict_eval"]      = json.loads(d["verdict_json"])
         return d
 
 

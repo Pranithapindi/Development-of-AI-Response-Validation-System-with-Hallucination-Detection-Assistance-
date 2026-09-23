@@ -3,6 +3,7 @@ import Sidebar from './components/Sidebar.jsx';
 import Navbar from './components/Navbar.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Validate from './pages/Validate.jsx';
+import BatchEvaluation from './pages/BatchEvaluation.jsx';
 import History from './pages/History.jsx';
 import Analytics from './pages/Analytics.jsx';
 import Architecture from './pages/Architecture.jsx';
@@ -15,6 +16,7 @@ const STORAGE_KEY = 'ai_validator_history';
 const PAGE_TITLES = {
   dashboard:    { title: 'Dashboard',             subtitle: 'Overview of validation activity and analytics' },
   validate:     { title: 'Validate Response',      subtitle: 'Analyze AI responses for hallucinations and unsupported claims' },
+  batch:        { title: 'Batch Evaluation',       subtitle: 'Automated CSV batch validation across all Judge Agents' },
   history:      { title: 'Validation History',     subtitle: 'Browse and manage past validation sessions' },
   analytics:    { title: 'Analytics',              subtitle: 'Visualize trends, distributions, and system metrics' },
   architecture: { title: 'System Architecture',    subtitle: 'End-to-end pipeline diagram and module details' },
@@ -101,6 +103,7 @@ export default function App() {
         <main className="flex-1 p-8">
           {page === 'dashboard'    && <Dashboard onNavigate={setPage} history={history} />}
           {page === 'validate'     && <Validate onSaveHistory={handleSaveHistory} />}
+          {page === 'batch'        && <BatchEvaluation />}
           {page === 'history'      && (
             <History
               history={history}

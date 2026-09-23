@@ -70,11 +70,32 @@ export async function clearAllHistory() {
   return res.data;
 }
 
-// ── Analytics ─────────────────────────────────────────────────────────────────
+// ── Batch Evaluation ──────────────────────────────────────────────────────────
 
-export async function fetchAnalytics() {
-  const res = await apiClient.get('/api/analytics');
+/**
+ * Upload a CSV file for batch evaluation.
+ * @param {File} file
+ */
+export async function uploadBatchCSV(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const res = await apiClient.post('/api/batch/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
   return res.data;
+}
+
+/**
+ * Download sample template CSV file for batch evaluation.
+ */
+export function downloadSampleCSV() {
+  const url = `${BASE_URL}/api/batch/sample-csv`;
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'sample_batch_evaluation.csv';
+  a.target = '_blank';
+  a.click();
 }
 
 export default apiClient;

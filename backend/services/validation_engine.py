@@ -35,6 +35,8 @@ from services.confidence_scorer    import (
 from services.relevance_judge      import evaluate_relevance
 from services.accuracy_judge       import evaluate_accuracy
 from services.hallucination_judge  import evaluate_hallucinations
+from services.completeness_judge   import evaluate_completeness
+from services.verdict_judge        import evaluate_verdict
 
 logger = logging.getLogger(__name__)
 
@@ -111,6 +113,8 @@ def run_validation(query: str, ai_response: str, reference: str = "") -> dict:
     relevance_eval = evaluate_relevance(query, ai_response)
     accuracy_eval = evaluate_accuracy(query, ai_response, reference, rag)
     hallucination_eval = evaluate_hallucinations(ai_response, reference, rag)
+    completeness_eval = evaluate_completeness(query, ai_response, reference, rag)
+    verdict_eval = evaluate_verdict(relevance_eval, accuracy_eval, hallucination_eval, completeness_eval)
 
     # ── Step 4: Process each claim ───────────────────────────────────────────
     results = []
@@ -135,9 +139,9 @@ def run_validation(query: str, ai_response: str, reference: str = "") -> dict:
     rag.cleanup()
 
     # ── Step 6: Aggregate results ────────────────────────────────────────────
-    overall_score  = compute_overall_score(results)
-    label          = get_label(overall_score)
-    summary        = generate_summary(results, overall_score)
+    overall_score  = verdict_eval.weighted_overall_score
+    label          = verdict_eval.verdict
+    summary        = verdict_eval.consolidated_reasoning
 
     supported     = sum(1 for r in results if r["status"] == "supported")
     unsupported   = sum(1 for r in results if r["status"] == "unsupported")
@@ -165,9 +169,11 @@ def run_validation(query: str, ai_response: str, reference: str = "") -> dict:
         },
         "timestamp":          datetime.now(timezone.utc).isoformat(),
         "processing_time_ms": elapsed_ms,
-        "relevance_eval":     relevance_eval.dict(),
-        "accuracy_eval":      accuracy_eval.dict(),
-        "hallucination_eval": hallucination_eval.dict(),
+        "relevance_eval":     relevance_eval.model_dump(),
+        "accuracy_eval":      accuracy_eval.model_dump(),
+        "hallucination_eval": hallucination_eval.model_dump(),
+        "completeness_eval":  completeness_eval.model_dump(),
+        "verdict_eval":       verdict_eval.model_dump(),
     }
 
     logger.info(

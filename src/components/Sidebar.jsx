@@ -1,12 +1,13 @@
 import React from 'react';
 import {
   LayoutDashboard, ShieldCheck, History, BarChart2,
-  GitBranch, Info, ChevronRight, Zap,
+  GitBranch, Info, ChevronRight, Zap, Layers,
 } from 'lucide-react';
 
 const navItems = [
   { id: 'dashboard',    label: 'Dashboard',          icon: LayoutDashboard },
   { id: 'validate',     label: 'Validate Response',  icon: ShieldCheck },
+  { id: 'batch',        label: 'Batch Evaluation',   icon: Layers },
   { id: 'history',      label: 'Validation History', icon: History },
   { id: 'analytics',    label: 'Analytics',          icon: BarChart2 },
   { id: 'architecture', label: 'System Architecture',icon: GitBranch },

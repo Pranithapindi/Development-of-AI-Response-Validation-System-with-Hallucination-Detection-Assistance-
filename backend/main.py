@@ -102,10 +102,12 @@ app.add_middleware(
 from routers.validate  import router as validate_router
 from routers.history   import router as history_router
 from routers.analytics import router as analytics_router
+from routers.batch     import router as batch_router
 
 app.include_router(validate_router)
 app.include_router(history_router)
 app.include_router(analytics_router)
+app.include_router(batch_router)
 
 
 # ── Health check ──────────────────────────────────────────────────────────────

@@ -347,33 +347,44 @@ export default function Validate({ onSaveHistory }) {
             </div>
           </div>
 
-          {/* Specialized Evaluation Judge Agents Breakdown (Milestone 2) */}
+          {/* Specialized Evaluation Judge Agents Breakdown (Milestone 3: 4 Dimensions) */}
           <div className="space-y-4">
-            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
-              Evaluation Judge Agents
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
+                Evaluation Judge Agents & Verdict Model
+              </h3>
+              {result.verdictEval?.verdict && (
+                <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                  result.verdictEval.verdict === 'Pass' ? 'bg-emerald-500 text-white' :
+                  result.verdictEval.verdict === 'Needs Improvement' ? 'bg-amber-500 text-white' :
+                  'bg-red-500 text-white'
+                }`}>
+                  Final Verdict: {result.verdictEval.verdict} ({result.verdictEval.weighted_overall_score ?? result.overallScore}/100)
+                </span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Relevance Judge Agent */}
               <div className="glass-card p-5 border-t-4 border-t-violet-500 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-extrabold uppercase text-violet-600 dark:text-violet-400 tracking-wider">
-                      Relevance Judge Agent
+                    <span className="text-[11px] font-extrabold uppercase text-violet-600 dark:text-violet-400 tracking-wider">
+                      Relevance Judge
                     </span>
                     <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300">
-                      {result.relevanceEval?.relevance_score ?? 85}/100
+                      {result.relevanceEval?.relevance_score ?? result.relevanceEval?.relevanceScore ?? 85}/100
                     </span>
                   </div>
                   <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm mb-1">
-                    {result.relevanceEval?.relevance_label || 'Fully Relevant'}
+                    {result.relevanceEval?.relevance_label || result.relevanceEval?.relevanceLabel || 'Fully Relevant'}
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-3">
-                    {result.relevanceEval?.reasoning || 'Evaluates whether response directly addresses user question intent.'}
+                    {result.relevanceEval?.reasoning || 'Evaluates prompt intent coverage.'}
                   </p>
                 </div>
-                <div className="text-[11px] bg-slate-50 dark:bg-slate-800/80 p-2.5 rounded-lg border border-slate-100 dark:border-slate-700/50">
-                  <span className="font-semibold text-slate-500">Query Intent: </span>
-                  <span className="text-slate-700 dark:text-slate-300">{result.relevanceEval?.query_intent || 'Factual Request'}</span>
+                <div className="text-[11px] bg-slate-50 dark:bg-slate-800/80 p-2 rounded-lg border border-slate-100 dark:border-slate-700/50">
+                  <span className="font-semibold text-slate-500">Weight: 20%</span>
                 </div>
               </div>
 
@@ -381,25 +392,22 @@ export default function Validate({ onSaveHistory }) {
               <div className="glass-card p-5 border-t-4 border-t-emerald-500 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-extrabold uppercase text-emerald-600 dark:text-emerald-400 tracking-wider">
-                      Accuracy Judge Agent
+                    <span className="text-[11px] font-extrabold uppercase text-emerald-600 dark:text-emerald-400 tracking-wider">
+                      Accuracy Judge
                     </span>
                     <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
-                      {result.accuracyEval?.accuracy_score ?? 90}/100
+                      {result.accuracyEval?.accuracy_score ?? result.accuracyEval?.accuracyScore ?? 90}/100
                     </span>
                   </div>
                   <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm mb-1">
-                    {result.accuracyEval?.accuracy_label || 'Correct'}
+                    {result.accuracyEval?.accuracy_label || result.accuracyEval?.accuracyLabel || 'Correct'}
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-3">
-                    {result.accuracyEval?.reasoning || 'Verifies factual correctness against trusted reference context.'}
+                    {result.accuracyEval?.reasoning || 'Verifies claims against reference context.'}
                   </p>
                 </div>
-                <div className="text-[11px] bg-slate-50 dark:bg-slate-800/80 p-2.5 rounded-lg border border-slate-100 dark:border-slate-700/50">
-                  <span className="font-semibold text-slate-500">Supporting Evidence: </span>
-                  <span className="text-slate-700 dark:text-slate-300">
-                    {result.accuracyEval?.supporting_evidence?.[0] ? `"${result.accuracyEval.supporting_evidence[0].substring(0, 60)}..."` : 'Reference Verified'}
-                  </span>
+                <div className="text-[11px] bg-slate-50 dark:bg-slate-800/80 p-2 rounded-lg border border-slate-100 dark:border-slate-700/50">
+                  <span className="font-semibold text-slate-500">Weight: 30%</span>
                 </div>
               </div>
 
@@ -407,32 +415,66 @@ export default function Validate({ onSaveHistory }) {
               <div className="glass-card p-5 border-t-4 border-t-red-500 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-extrabold uppercase text-red-600 dark:text-red-400 tracking-wider">
-                      Hallucination Detection Agent
+                    <span className="text-[11px] font-extrabold uppercase text-red-600 dark:text-red-400 tracking-wider">
+                      Hallucination Agent
                     </span>
                     <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
-                      (result.hallucinationEval?.hallucination_score ?? result.stats?.hallucinationRisk ?? 0) > 0
+                      (result.hallucinationEval?.hallucination_score ?? result.hallucinationEval?.hallucinationScore ?? result.stats?.hallucinationRisk ?? 0) > 0
                         ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'
                         : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'
                     }`}>
-                      {result.hallucinationEval?.hallucination_score ?? result.stats?.hallucinationRisk ?? 0}% Risk
+                      {result.hallucinationEval?.hallucination_score ?? result.hallucinationEval?.hallucinationScore ?? result.stats?.hallucinationRisk ?? 0}% Risk
                     </span>
                   </div>
                   <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm mb-1">
-                    {result.hallucinationEval?.hallucination_label || (result.stats?.hallucinationRisk > 0 ? 'Minor Hallucination' : 'No Hallucination')}
+                    {result.hallucinationEval?.hallucination_label || result.hallucinationEval?.hallucinationLabel || 'No Hallucination'}
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-3">
-                    {result.hallucinationEval?.reasoning || 'Identifies unsupported or fabricated claims by cross-referencing RAG sources.'}
+                    {result.hallucinationEval?.reasoning || 'Flags unsupported or fabricated statements.'}
                   </p>
                 </div>
-                <div className="text-[11px] bg-slate-50 dark:bg-slate-800/80 p-2.5 rounded-lg border border-slate-100 dark:border-slate-700/50">
-                  <span className="font-semibold text-slate-500">Flagged Statements: </span>
-                  <span className="text-slate-700 dark:text-slate-300">
-                    {result.hallucinationEval?.flagged_claims_count ?? 0} statement(s) flagged
-                  </span>
+                <div className="text-[11px] bg-slate-50 dark:bg-slate-800/80 p-2 rounded-lg border border-slate-100 dark:border-slate-700/50">
+                  <span className="font-semibold text-slate-500">Weight: 30% (Safety)</span>
+                </div>
+              </div>
+
+              {/* Completeness Judge Agent (M3.1) */}
+              <div className="glass-card p-5 border-t-4 border-t-blue-500 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[11px] font-extrabold uppercase text-blue-600 dark:text-blue-400 tracking-wider">
+                      Completeness Judge
+                    </span>
+                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+                      {result.completenessEval?.completeness_score ?? result.completenessEval?.completenessScore ?? 85}/100
+                    </span>
+                  </div>
+                  <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm mb-1">
+                    {result.completenessEval?.completeness_label || result.completenessEval?.completenessLabel || 'Fully Complete'}
+                  </h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-3">
+                    {result.completenessEval?.reasoning || 'Identifies specific question omissions or missing aspects.'}
+                  </p>
+                </div>
+                <div className="text-[11px] bg-slate-50 dark:bg-slate-800/80 p-2 rounded-lg border border-slate-100 dark:border-slate-700/50">
+                  <span className="font-semibold text-slate-500">Weight: 20%</span>
                 </div>
               </div>
             </div>
+
+            {/* Omissions & Missing Aspects Details if present */}
+            {(result.completenessEval?.missing_aspects?.length > 0 || result.completenessEval?.missingAspects?.length > 0) && (
+              <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 text-xs">
+                <span className="font-bold text-amber-800 dark:text-amber-300 block mb-1">
+                  Missing / Omitted Aspects Identified by Completeness Agent:
+                </span>
+                <ul className="list-disc pl-5 space-y-1 text-amber-700 dark:text-amber-400">
+                  {(result.completenessEval?.missing_aspects || result.completenessEval?.missingAspects || []).map((item, idx) => (
+                    <li key={idx}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
 

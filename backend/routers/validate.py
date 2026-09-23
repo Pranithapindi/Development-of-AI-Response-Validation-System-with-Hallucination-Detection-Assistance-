@@ -15,12 +15,15 @@ from fastapi.responses import Response
 from models.schemas       import (
     ValidationRequest, ValidationResponse,
     RelevanceEvaluationResult, AccuracyEvaluationResult,
-    HallucinationEvaluationResult, BenchmarkSummary
+    HallucinationEvaluationResult, CompletenessEvaluationResult,
+    VerdictEvaluationResult, BenchmarkSummary
 )
 from services.validation_engine import run_validation
 from services.relevance_judge   import evaluate_relevance
 from services.accuracy_judge    import evaluate_accuracy
 from services.hallucination_judge import evaluate_hallucinations
+from services.completeness_judge import evaluate_completeness
+from services.verdict_judge import evaluate_verdict
 from services.benchmark_runner  import run_benchmark_suite
 from services.pdf_generator     import generate_pdf_report
 from database.db          import save_validation, get_validation
@@ -33,17 +36,6 @@ router = APIRouter(prefix="/api/validate", tags=["Validation"])
 async def validate_response(request: ValidationRequest):
     """
     Run the complete hallucination detection pipeline on the given AI response.
-
-    Pipeline:
-      1. Extract factual claims (NLTK)
-      2. Build RAG pipeline (LangChain + ChromaDB)
-      3. Run Relevance, Accuracy, and Hallucination Judge Agents
-      4. Detect contradictions (negation + topic mismatch)
-      5. Score confidence (weighted formula)
-      6. Classify each claim (Factual / Partially Hallucinated / Hallucinated)
-      7. Compute overall reliability score
-      8. Persist to MongoDB/SQLite
-      9. Return full report
     """
     if not request.ai_response or not request.ai_response.strip():
         raise HTTPException(status_code=400, detail="ai_response cannot be empty")
@@ -100,6 +92,34 @@ async def evaluate_hallucination_endpoint(request: ValidationRequest):
     except Exception as e:
         logger.exception("Hallucination evaluation failed: %s", e)
         raise HTTPException(status_code=500, detail=f"Hallucination evaluation error: {str(e)}")
+
+
+@router.post("/completeness", response_model=CompletenessEvaluationResult)
+async def evaluate_completeness_endpoint(request: ValidationRequest):
+    """
+    Run the Completeness Judge Agent (M3.1) on query, AI response & reference.
+    """
+    try:
+        return evaluate_completeness(request.query, request.ai_response, request.reference or "")
+    except Exception as e:
+        logger.exception("Completeness evaluation failed: %s", e)
+        raise HTTPException(status_code=500, detail=f"Completeness evaluation error: {str(e)}")
+
+
+@router.post("/verdict", response_model=VerdictEvaluationResult)
+async def evaluate_verdict_endpoint(request: ValidationRequest):
+    """
+    Run the Verdict Agent (M3.2) to calculate overall verdict across all 4 dimensions.
+    """
+    try:
+        rel = evaluate_relevance(request.query, request.ai_response)
+        acc = evaluate_accuracy(request.query, request.ai_response, request.reference or "")
+        hall = evaluate_hallucinations(request.ai_response, request.reference or "")
+        comp = evaluate_completeness(request.query, request.ai_response, request.reference or "")
+        return evaluate_verdict(rel, acc, hall, comp)
+    except Exception as e:
+        logger.exception("Verdict evaluation failed: %s", e)
+        raise HTTPException(status_code=500, detail=f"Verdict evaluation error: {str(e)}")
 
 
 @router.post("/benchmark", response_model=BenchmarkSummary)

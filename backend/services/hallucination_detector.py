@@ -45,7 +45,7 @@ def _extract_keywords(text: str) -> set[str]:
 def _negation_score(claim_keywords: set[str], reference_text: str) -> float:
     """
     Check if the reference contains negation near claim keywords.
-    Returns a contradiction signal in [0, 0.6].
+    Returns a contradiction signal in [0, 0.8].
     """
     sentences = re.split(r"(?<=[.!?])\s+", reference_text)
     total_neg = 0.0
@@ -59,9 +59,9 @@ def _negation_score(claim_keywords: set[str], reference_text: str) -> float:
         # Does it contain negation?
         has_negation = any(neg in lower.split() for neg in NEGATION_WORDS)
         if has_negation:
-            total_neg += 0.35
+            total_neg += 0.60
 
-    return min(0.6, total_neg)
+    return min(0.8, total_neg)
 
 
 def _topic_mismatch_score(claim_keywords: set[str], ref_keywords: set[str]) -> float:

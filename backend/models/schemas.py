@@ -128,6 +128,66 @@ class ValidationStats(BaseModel):
     hallucination_risk: int  # percentage
 
 
+class CompletenessEvaluationResult(BaseModel):
+    completeness_score: int = Field(..., ge=0, le=100, description="Completeness score 0-100")
+    completeness_label: str = Field(..., description="Fully Complete | Substantially Complete | Partially Complete | Incomplete")
+    reasoning: str = Field(..., description="Detailed explanation of omissions or completeness")
+    addressed_aspects: List[str] = Field(default_factory=list, description="Question requirements/sub-questions fully addressed")
+    partially_addressed_aspects: List[str] = Field(default_factory=list, description="Aspects partially addressed in response")
+    missing_aspects: List[str] = Field(default_factory=list, description="Omitted requirements or unanswered sub-questions")
+    expected_info_sources: List[str] = Field(default_factory=list, description="Source context or reference points used")
+
+
+class VerdictEvaluationResult(BaseModel):
+    relevance_score: int = Field(..., ge=0, le=100)
+    accuracy_score: int = Field(..., ge=0, le=100)
+    hallucination_score: int = Field(..., ge=0, le=100, description="Risk percentage")
+    hallucination_safety_score: int = Field(..., ge=0, le=100, description="100 - risk percentage")
+    completeness_score: int = Field(..., ge=0, le=100)
+    weighted_overall_score: int = Field(..., ge=0, le=100)
+    verdict: str = Field(..., description="Pass | Needs Improvement | Fail")
+    verdict_badge_color: str = Field(..., description="Color class/hex for UI badge")
+    major_issues: List[str] = Field(default_factory=list, description="List of major failures or warnings")
+    consolidated_reasoning: str = Field(..., description="Synthesized reasoning across all 4 evaluation dimensions")
+
+
+# ── Batch Evaluation Schemas ───────────────────────────────────────────────────
+
+class BatchItemResult(BaseModel):
+    row_index: int
+    id: str
+    query: str
+    ai_response: str
+    reference: Optional[str] = ""
+    relevance_score: int = 0
+    accuracy_score: int = 0
+    hallucination_score: int = 0
+    completeness_score: int = 0
+    overall_score: int = 0
+    verdict: str = "Fail"
+    status: str = "success"  # success | error
+    error_message: Optional[str] = None
+    validation_report: Optional[dict] = None
+
+
+class BatchSummaryResult(BaseModel):
+    batch_id: str
+    timestamp: str
+    total_records: int
+    valid_records: int
+    failed_records: int
+    pass_count: int
+    needs_improvement_count: int
+    fail_count: int
+    avg_relevance: float
+    avg_accuracy: float
+    avg_hallucination_risk: float
+    avg_completeness: float
+    avg_overall_score: float
+    hallucination_rate_pct: float
+    results: List[BatchItemResult] = Field(default_factory=list)
+
+
 # ── Response Models ───────────────────────────────────────────────────────────
 
 class ValidationResponse(BaseModel):
@@ -145,6 +205,8 @@ class ValidationResponse(BaseModel):
     relevance_eval: Optional[RelevanceEvaluationResult] = None
     accuracy_eval: Optional[AccuracyEvaluationResult] = None
     hallucination_eval: Optional[HallucinationEvaluationResult] = None
+    completeness_eval: Optional[CompletenessEvaluationResult] = None
+    verdict_eval: Optional[VerdictEvaluationResult] = None
 
 
 class HistoryRecord(BaseModel):
