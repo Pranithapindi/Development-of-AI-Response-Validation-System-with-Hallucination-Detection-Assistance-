@@ -241,13 +241,23 @@ def generate_sample_csv() -> str:
         "Tim Berners-Lee invented the World Wide Web in 1989 at CERN."
     ])
     writer.writerow([
-        "Can antibiotics cure the common cold?",
-        "Antibiotics like amoxicillin kill cold viruses within 24 hours.",
-        "Antibiotics only kill bacteria and are completely ineffective against viral infections like colds."
+        "Can antibiotics effectively cure influenza or the common cold?",
+        "Antibiotics like amoxicillin and azithromycin kill cold viruses within 24 hours.",
+        "Antibiotics are solely effective against bacterial infections and do not affect viruses like influenza or the common cold."
     ])
     writer.writerow([
-        "Why did Albert Einstein win the Nobel Prize?",
-        "Einstein won the 1921 Nobel Prize in Physics for his work on general relativity.",
-        "Einstein won the 1921 Nobel Prize in Physics for his discovery of the law of the photoelectric effect, not relativity."
+        "Why did Albert Einstein receive the Nobel Prize?",
+        "Albert Einstein received the 1921 Nobel Prize in Physics for developing the theory of general relativity.",
+        "The Nobel Prize in Physics 1921 was awarded to Albert Einstein for his discovery of the law of the photoelectric effect, not relativity."
+    ])
+    writer.writerow([
+        "What is the boiling point of water at sea level?",
+        "At standard sea level atmospheric pressure, pure water boils at 100 degrees Celsius or 212 degrees Fahrenheit.",
+        "Standard atmospheric pressure at sea level corresponds to a boiling point for pure water of 100 degrees Celsius."
+    ])
+    writer.writerow([
+        "Explain the cause of World War I, key battles, and the Treaty of Versailles outcome.",
+        "World War I started in 1914.",
+        "World War I was triggered by the assassination of Archduke Franz Ferdinand in 1914. Key battles included the Somme and Verdun. The Treaty of Versailles imposed harsh penalties on Germany in 1919."
     ])
     return output.getvalue()

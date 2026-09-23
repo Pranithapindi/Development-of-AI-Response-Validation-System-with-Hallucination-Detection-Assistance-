@@ -5,6 +5,52 @@ import {
 } from 'lucide-react';
 import { uploadBatchCSV, downloadSampleCSV } from '../services/api.js';
 
+import { runValidation } from '../services/validationEngine.js';
+
+function parseCSVClientSide(text) {
+  const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+  if (lines.length < 2) return [];
+
+  // Simple CSV line parser respecting quotes
+  const parseRow = (str) => {
+    const row = [];
+    let insideQuote = false;
+    let entry = '';
+    for (let i = 0; i < str.length; i++) {
+      const char = str[i];
+      if (char === '"') {
+        insideQuote = !insideQuote;
+      } else if (char === ',' && !insideQuote) {
+        row.push(entry.trim());
+        entry = '';
+      } else {
+        entry += char;
+      }
+    }
+    row.push(entry.trim());
+    return row;
+  };
+
+  const header = parseRow(lines[0]).map(h => h.toLowerCase().replace(/[^a-z0-9_]/g, ''));
+  const queryCol = header.findIndex(h => ['question', 'query', 'prompt'].includes(h));
+  const respCol  = header.findIndex(h => ['ai_response', 'response', 'answer'].includes(h));
+  const refCol   = header.findIndex(h => ['reference', 'context', 'evidence'].includes(h));
+
+  if (queryCol === -1 || respCol === -1) return [];
+
+  const items = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = parseRow(lines[i]);
+    const q = cols[queryCol] || '';
+    const r = cols[respCol] || '';
+    const ref = refCol !== -1 ? (cols[refCol] || '') : '';
+    if (q && r) {
+      items.push({ row_index: i + 1, query: q, ai_response: r, reference: ref });
+    }
+  }
+  return items;
+}
+
 export default function BatchEvaluation() {
   const [file, setFile] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -42,8 +88,9 @@ export default function BatchEvaluation() {
     setError(null);
     setProgress(15);
 
+    let timer;
     try {
-      const timer = setInterval(() => {
+      timer = setInterval(() => {
         setProgress(prev => (prev < 85 ? prev + 15 : prev));
       }, 400);
 
@@ -52,8 +99,78 @@ export default function BatchEvaluation() {
       setProgress(100);
       setBatchResult(result);
     } catch (err) {
-      console.error('Batch evaluation error:', err);
-      setError(err.response?.data?.detail || 'Failed to process batch CSV. Ensure file format is valid.');
+      clearInterval(timer);
+      console.warn('Backend batch API unavailable/error, running JS engine fallback:', err);
+      try {
+        const text = await file.text();
+        const parsedRows = parseCSVClientSide(text);
+        if (parsedRows.length === 0) {
+          setError('Failed to parse CSV. Ensure CSV has question and ai_response columns.');
+          return;
+        }
+
+        const batchItems = [];
+        let passCount = 0, needsCount = 0, failCount = 0;
+        let sumRel = 0, sumAcc = 0, sumHall = 0, sumComp = 0, sumOver = 0;
+        let hallRecords = 0;
+
+        for (const row of parsedRows) {
+          const rep = runValidation({ query: row.query, aiResponse: row.ai_response, reference: row.reference });
+          const v = rep.verdictEval?.verdict || rep.label || 'Fail';
+          const relS = rep.relevanceEval?.relevanceScore ?? 80;
+          const accS = rep.accuracyEval?.accuracyScore ?? 80;
+          const hallS = rep.hallucinationEval?.hallucinationScore ?? rep.stats?.hallucinationRisk ?? 0;
+          const compS = rep.completenessEval?.completenessScore ?? 80;
+          const overS = rep.verdictEval?.weightedOverallScore ?? rep.overallScore ?? 80;
+
+          if (v === 'Pass') passCount++;
+          else if (v === 'Needs Improvement') needsCount++;
+          else failCount++;
+
+          if (hallS > 0) hallRecords++;
+
+          sumRel += relS; sumAcc += accS; sumHall += hallS; sumComp += compS; sumOver += overS;
+
+          batchItems.push({
+            row_index: row.row_index,
+            id: `b${Date.now()}_${row.row_index}`,
+            query: row.query,
+            ai_response: row.ai_response,
+            reference: row.reference,
+            relevance_score: relS,
+            accuracy_score: accS,
+            hallucination_score: hallS,
+            completeness_score: compS,
+            overall_score: overS,
+            verdict: v,
+            status: 'success',
+            validation_report: rep
+          });
+        }
+
+        const total = parsedRows.length;
+        setBatchResult({
+          batch_id: `js_${Date.now()}`,
+          timestamp: new Date().toISOString(),
+          total_records: total,
+          valid_records: total,
+          failed_records: 0,
+          pass_count: passCount,
+          needs_improvement_count: needsCount,
+          fail_count: failCount,
+          avg_relevance: Math.round((sumRel / total) * 10) / 10,
+          avg_accuracy: Math.round((sumAcc / total) * 10) / 10,
+          avg_hallucination_risk: Math.round((sumHall / total) * 10) / 10,
+          avg_completeness: Math.round((sumComp / total) * 10) / 10,
+          avg_overall_score: Math.round((sumOver / total) * 10) / 10,
+          hallucination_rate_pct: Math.round((hallRecords / total) * 1000) / 10,
+          results: batchItems
+        });
+        setProgress(100);
+      } catch (jsErr) {
+        console.error('JS CSV parse error:', jsErr);
+        setError('Failed to process batch CSV.');
+      }
     } finally {
       setIsProcessing(false);
     }
