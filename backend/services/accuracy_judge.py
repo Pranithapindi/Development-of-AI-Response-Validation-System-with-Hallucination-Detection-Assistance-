@@ -14,6 +14,7 @@ Scoring Scale:
    0 - 19  : Contradictory — Direct contradictions with trusted reference evidence.
 """
 
+import re
 import logging
 from typing import List, Dict, Any, Optional
 
@@ -90,14 +91,30 @@ def evaluate_accuracy(
             if evidence and evidence != "No reference context available." and evidence not in supporting_evidence:
                 supporting_evidence.append(evidence)
 
+            # Check for named entity substitution / mismatch if reference is present
+            entity_mismatch = False
+            if has_reference and ref_context:
+                claim_entities = {
+                    w for w in re.findall(r"\b[A-Z][a-z]+\b", claim_text)
+                    if w.lower() not in {"the", "this", "that", "there", "what", "who", "when", "where", "why", "how", "it", "in", "on", "at", "for"}
+                }
+                if claim_entities:
+                    ref_lower = ref_context.lower()
+                    missing_entities = [e for e in claim_entities if e.lower() not in ref_lower]
+                    if len(missing_entities) >= len(claim_entities) * 0.5:
+                        entity_mismatch = True
+
             # Claim level accuracy classification
             if contra_score > 0.50:
                 contradictory_count += 1
                 claim_scores.append(0.0)
-            elif sim_score >= 0.65:
+            elif entity_mismatch:
+                incorrect_count += 1
+                claim_scores.append(0.2)
+            elif sim_score >= 0.75:
                 correct_count += 1
                 claim_scores.append(1.0)
-            elif sim_score >= 0.35:
+            elif sim_score >= 0.40:
                 partially_correct_count += 1
                 claim_scores.append(0.5)
             elif has_reference:

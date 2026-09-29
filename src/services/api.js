@@ -98,4 +98,28 @@ export function downloadSampleCSV() {
   a.click();
 }
 
+/**
+ * M4.2 — Generate and download a structured PDF report from batch summary.
+ * Posts the batch summary JSON to the backend and downloads the resulting PDF.
+ * @param {Object} batchSummary - The batch result object
+ */
+export async function downloadBatchPDFReport(batchSummary) {
+  try {
+    const res = await apiClient.post('/api/batch/report', batchSummary, {
+      responseType: 'blob',
+    });
+    const blob = new Blob([res.data], { type: 'application/pdf' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `batch_report_${(batchSummary.batch_id || 'export').slice(0, 8)}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+    return true;
+  } catch (err) {
+    console.error('Batch PDF download failed:', err);
+    return false;
+  }
+}
+
 export default apiClient;

@@ -2,8 +2,9 @@ import React, { useState, useCallback } from 'react';
 import {
   Upload, FileText, Download, CheckCircle, AlertTriangle, XCircle,
   Search, Filter, Eye, RefreshCw, Layers, ShieldCheck, HelpCircle, X, FlaskConical,
+  FileDown,
 } from 'lucide-react';
-import { uploadBatchCSV, downloadSampleCSV } from '../services/api.js';
+import { uploadBatchCSV, downloadSampleCSV, downloadBatchPDFReport } from '../services/api.js';
 
 import { runValidation } from '../services/validationEngine.js';
 
@@ -33,8 +34,8 @@ function parseCSVClientSide(text) {
 
   const header = parseRow(lines[0]).map(h => h.toLowerCase().replace(/[^a-z0-9_]/g, ''));
   const queryCol = header.findIndex(h => ['question', 'query', 'prompt'].includes(h));
-  const respCol  = header.findIndex(h => ['ai_response', 'response', 'answer'].includes(h));
-  const refCol   = header.findIndex(h => ['reference', 'context', 'evidence'].includes(h));
+  const respCol = header.findIndex(h => ['ai_response', 'response', 'answer'].includes(h));
+  const refCol = header.findIndex(h => ['reference', 'context', 'evidence'].includes(h));
 
   if (queryCol === -1 || respCol === -1) return [];
 
@@ -51,7 +52,7 @@ function parseCSVClientSide(text) {
   return items;
 }
 
-export default function BatchEvaluation() {
+export default function BatchEvaluation({ onSaveBatch }) {
   const [file, setFile] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -60,6 +61,7 @@ export default function BatchEvaluation() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL'); // ALL | Pass | Needs Improvement | Fail
   const [selectedRecord, setSelectedRecord] = useState(null);
+  const [pdfExporting, setPdfExporting] = useState(false);
 
   const handleFileDrop = (e) => {
     e.preventDefault();
@@ -98,6 +100,7 @@ export default function BatchEvaluation() {
       clearInterval(timer);
       setProgress(100);
       setBatchResult(result);
+      if (onSaveBatch) onSaveBatch(result);
     } catch (err) {
       clearInterval(timer);
       console.warn('Backend batch API unavailable/error, running JS engine fallback:', err);
@@ -149,7 +152,7 @@ export default function BatchEvaluation() {
         }
 
         const total = parsedRows.length;
-        setBatchResult({
+        const fallbackResult = {
           batch_id: `js_${Date.now()}`,
           timestamp: new Date().toISOString(),
           total_records: total,
@@ -164,8 +167,10 @@ export default function BatchEvaluation() {
           avg_completeness: Math.round((sumComp / total) * 10) / 10,
           avg_overall_score: Math.round((sumOver / total) * 10) / 10,
           hallucination_rate_pct: Math.round((hallRecords / total) * 1000) / 10,
-          results: batchItems
-        });
+          results: batchItems,
+        };
+        setBatchResult(fallbackResult);
+        if (onSaveBatch) onSaveBatch(fallbackResult);
         setProgress(100);
       } catch (jsErr) {
         console.error('JS CSV parse error:', jsErr);
@@ -310,7 +315,7 @@ export default function BatchEvaluation() {
       {batchResult && (
         <div className="space-y-6">
           {/* Action Bar */}
-          <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div className="flex justify-between items-center flex-wrap gap-3 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
             <div className="flex items-center gap-3">
               <div className="p-2.5 bg-blue-50 dark:bg-blue-900/40 rounded-xl text-blue-600 dark:text-blue-400 font-bold text-xs">
                 Batch ID: {batchResult.batch_id.slice(0, 8)}
@@ -319,9 +324,24 @@ export default function BatchEvaluation() {
                 Evaluated {batchResult.valid_records} record(s)
               </span>
             </div>
-            <button onClick={resetBatch} className="btn-secondary text-xs flex items-center gap-2">
-              <RefreshCw size={14} /> Evaluate New CSV
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                id="btn-export-batch-pdf"
+                onClick={async () => {
+                  setPdfExporting(true);
+                  await downloadBatchPDFReport(batchResult);
+                  setPdfExporting(false);
+                }}
+                disabled={pdfExporting}
+                className="btn-primary text-xs flex items-center gap-2 disabled:opacity-50"
+              >
+                <FileDown size={14} />
+                {pdfExporting ? 'Generating PDF…' : 'Export PDF Report'}
+              </button>
+              <button onClick={resetBatch} className="btn-secondary text-xs flex items-center gap-2">
+                <RefreshCw size={14} /> Evaluate New CSV
+              </button>
+            </div>
           </div>
 
           {/* Aggregated Batch Summary Cards */}
@@ -395,11 +415,10 @@ export default function BatchEvaluation() {
                 <button
                   key={st}
                   onClick={() => setStatusFilter(st)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                    statusFilter === st
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${statusFilter === st
                       ? 'bg-blue-600 text-white shadow-md'
                       : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
-                  }`}
+                    }`}
                 >
                   {st}
                 </button>
@@ -441,11 +460,10 @@ export default function BatchEvaluation() {
                       <td className="p-3.5 text-center font-semibold text-blue-600">{item.completeness_score}</td>
                       <td className="p-3.5 text-center font-extrabold text-slate-900 dark:text-slate-100">{item.overall_score}</td>
                       <td className="p-3.5 text-center">
-                        <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${
-                          item.verdict === 'Pass' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400' :
-                          item.verdict === 'Needs Improvement' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400' :
-                          'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'
-                        }`}>
+                        <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${item.verdict === 'Pass' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400' :
+                            item.verdict === 'Needs Improvement' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400' :
+                              'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'
+                          }`}>
                           {item.verdict}
                         </span>
                       </td>
@@ -483,11 +501,10 @@ export default function BatchEvaluation() {
                 <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                   Batch Entry Row #{selectedRecord.row_index} Details
                 </h3>
-                <span className={`inline-block mt-1 px-3 py-0.5 rounded-full text-xs font-bold ${
-                  selectedRecord.verdict === 'Pass' ? 'bg-emerald-100 text-emerald-700' :
-                  selectedRecord.verdict === 'Needs Improvement' ? 'bg-amber-100 text-amber-700' :
-                  'bg-red-100 text-red-700'
-                }`}>
+                <span className={`inline-block mt-1 px-3 py-0.5 rounded-full text-xs font-bold ${selectedRecord.verdict === 'Pass' ? 'bg-emerald-100 text-emerald-700' :
+                    selectedRecord.verdict === 'Needs Improvement' ? 'bg-amber-100 text-amber-700' :
+                      'bg-red-100 text-red-700'
+                  }`}>
                   Verdict: {selectedRecord.verdict} ({selectedRecord.overall_score}/100)
                 </span>
               </div>

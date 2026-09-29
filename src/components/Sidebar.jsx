@@ -1,18 +1,20 @@
 import React from 'react';
 import {
   LayoutDashboard, ShieldCheck, History, BarChart2,
-  GitBranch, Info, ChevronRight, Zap, Layers,
+  GitBranch, Info, ChevronRight, Zap, Layers, PieChart, BookOpen,
 } from 'lucide-react';
 
 const navItems = [
-  { id: 'dashboard',    label: 'Dashboard',          icon: LayoutDashboard },
-  { id: 'validate',     label: 'Validate Response',  icon: ShieldCheck },
-  { id: 'batch',        label: 'Batch Evaluation',   icon: Layers },
-  { id: 'history',      label: 'Validation History', icon: History },
-  { id: 'analytics',    label: 'Analytics',          icon: BarChart2 },
-  { id: 'architecture', label: 'System Architecture',icon: GitBranch },
-  { id: 'walkthrough',  label: 'Code Walkthrough',   icon: Info },
-  { id: 'about',        label: 'About Project',      icon: Info },
+  { id: 'dashboard',    label: 'Dashboard',              icon: LayoutDashboard },
+  { id: 'validate',     label: 'Validate Response',      icon: ShieldCheck },
+  { id: 'batch',        label: 'Batch Evaluation',       icon: Layers },
+  { id: 'evaldash',     label: 'Evaluation Dashboard',   icon: PieChart },
+  { id: 'history',      label: 'Validation History',     icon: History },
+  { id: 'analytics',    label: 'Analytics',              icon: BarChart2 },
+  { id: 'documentation',label: 'Technical Docs & Report',icon: BookOpen },
+  { id: 'architecture', label: 'System Architecture',    icon: GitBranch },
+  { id: 'walkthrough',  label: 'Code Walkthrough',       icon: Info },
+  { id: 'about',        label: 'About Project',          icon: Info },
 ];
 
 export default function Sidebar({ currentPage, onNavigate }) {

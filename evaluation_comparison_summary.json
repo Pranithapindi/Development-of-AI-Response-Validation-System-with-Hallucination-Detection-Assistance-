@@ -1,0 +1,1615 @@
+{
+  "system_a": {
+    "batch_id": "bcc51130-eb70-49f0-97ac-843e67f813ab",
+    "timestamp": "2026-09-29T07:26:20.835183+00:00",
+    "total_records": 6,
+    "valid_records": 6,
+    "failed_records": 0,
+    "pass_count": 2,
+    "needs_improvement_count": 1,
+    "fail_count": 3,
+    "avg_relevance": 75.2,
+    "avg_accuracy": 39.2,
+    "avg_hallucination_risk": 29.2,
+    "avg_completeness": 72.2,
+    "avg_overall_score": 62.5,
+    "hallucination_rate_pct": 50.0,
+    "results": [
+      {
+        "row_index": 2,
+        "id": "4f3d406a-1fe4-4297-99ac-a30cbae95efd",
+        "query": "What are the core treatments and contraindications for acute viral hepatitis A?",
+        "ai_response": "Hepatitis A is an acute, self-limiting liver infection caused by HAV. Treatment is primarily supportive, including rest, balanced hydration, and adequate nutrition. Hospitalization is indicated only for fulminant liver failure or severe dehydration. Hepatotoxic drugs such as acetaminophen excess should be strictly avoided. Antibiotics and antiviral agents have no therapeutic efficacy against HAV infection.",
+        "reference": "Hepatitis A virus (HAV) infection causes acute hepatitis. Management is entirely supportive with hydration, nutrition, and rest. Hepatotoxic substances and paracetamol excess should be avoided. No specific antiviral therapy exists; antibiotics are ineffective against viruses.",
+        "relevance_score": 64,
+        "accuracy_score": 25,
+        "hallucination_score": 25,
+        "completeness_score": 50,
+        "overall_score": 53,
+        "verdict": "Fail",
+        "status": "success",
+        "error_message": null,
+        "validation_report": {
+          "id": "601b8187-c524-4d44-8584-1d58e6b90288",
+          "query": "What are the core treatments and contraindications for acute viral hepatitis A?",
+          "ai_response": "Hepatitis A is an acute, self-limiting liver infection caused by HAV. Treatment is primarily supportive, including rest, balanced hydration, and adequate nutrition. Hospitalization is indicated only for fulminant liver failure or severe dehydration. Hepatotoxic drugs such as acetaminophen excess should be strictly avoided. Antibiotics and antiviral agents have no therapeutic efficacy against HAV infection.",
+          "reference": "Hepatitis A virus (HAV) infection causes acute hepatitis. Management is entirely supportive with hydration, nutrition, and rest. Hepatotoxic substances and paracetamol excess should be avoided. No specific antiviral therapy exists; antibiotics are ineffective against viruses.",
+          "claims": [
+            {
+              "id": 1,
+              "text": "Hepatitis A is an acute, self-limiting liver infection caused by HAV.",
+              "type": "factual",
+              "status": "supported",
+              "confidence_pct": 92,
+              "similarity_score": 0.835,
+              "contradiction_score": 0.0,
+              "evidence": "Hepatitis A virus (HAV) infection causes acute hepatitis. Management is entirely supportive with hydration, nutrition, and rest. Hepatotoxic substances and paracetamol excess should be avoided.",
+              "explanation": "The reference context contains evidence that semantically aligns with this claim (confidence 92%). The key facts and entities in the claim match the trusted source material based on SentenceTransformer embedding similarity."
+            },
+            {
+              "id": 2,
+              "text": "Treatment is primarily supportive, including rest, balanced hydration, and adequate nutrition.",
+              "type": "factual",
+              "status": "uncertain",
+              "confidence_pct": 64,
+              "similarity_score": 0.33,
+              "contradiction_score": 0.125,
+              "evidence": "No specific antiviral therapy exists; antibiotics are ineffective against viruses.",
+              "explanation": "The reference context is partially related but does not conclusively verify this claim (confidence 64%). The semantic similarity is moderate. Additional trusted sources should be consulted before relying on this statement."
+            },
+            {
+              "id": 3,
+              "text": "Hospitalization is indicated only for fulminant liver failure or severe dehydration.",
+              "type": "factual",
+              "status": "uncertain",
+              "confidence_pct": 65,
+              "similarity_score": 0.383,
+              "contradiction_score": 0.2,
+              "evidence": "Hepatitis A virus (HAV) infection causes acute hepatitis. Management is entirely supportive with hydration, nutrition, and rest. Hepatotoxic substances and paracetamol excess should be avoided.",
+              "explanation": "The reference context is partially related but does not conclusively verify this claim (confidence 65%). The semantic similarity is moderate. Additional trusted sources should be consulted before relying on this statement."
+            },
+            {
+              "id": 4,
+              "text": "Antibiotics and antiviral agents have no therapeutic efficacy against HAV infection.",
+              "type": "factual",
+              "status": "contradictory",
+              "confidence_pct": 75,
+              "similarity_score": 0.724,
+              "contradiction_score": 0.54,
+              "evidence": "No specific antiviral therapy exists; antibiotics are ineffective against viruses.",
+              "explanation": "The reference context appears to contradict this claim (confidence 75%). Negation signals and topic mismatch were detected between the claim and the reference. This claim is a potential hallucination \u2014 the AI may have generated an incorrect or misleading statement."
+            }
+          ],
+          "overall_score": 53,
+          "summary": "Overall evaluation verdict is 'Fail' with a weighted reliability score of 53/100. Dimension Scores \u2014 Relevance: 64/100 (Partially Relevant), Accuracy: 25/100 (Incorrect), Hallucination Risk: 25% (Severe Hallucination), Completeness: 50/100 (Partially Complete). Major issues identified: CRITICAL: Severe hallucination or unsupported claims detected.; CRITICAL: 1 claim(s) directly contradict trusted reference context.; COMPLETENESS: 1 question requirement(s)/sub-question(s) omitted.; ACCURACY: High proportion of inaccurate or unverified statements (25/100).",
+          "label": "Fail",
+          "stats": {
+            "supported": 1,
+            "unsupported": 0,
+            "contradictory": 1,
+            "uncertain": 2,
+            "hallucination_risk": 25
+          },
+          "timestamp": "2026-09-29T07:26:19.635534+00:00",
+          "processing_time_ms": 543,
+          "relevance_eval": {
+            "relevance_score": 64,
+            "relevance_label": "Partially Relevant",
+            "reasoning": "The response is partially relevant to the question intent (Factual Definition / Explanation). It addresses aspects like acute, viral, hepatitis, but misses specific details regarding core, treatments, contraindications.",
+            "key_aspects_covered": [
+              "acute",
+              "viral",
+              "hepatitis"
+            ],
+            "missing_aspects": [
+              "core",
+              "treatments",
+              "contraindications"
+            ],
+            "query_intent": "Factual Definition / Explanation"
+          },
+          "accuracy_eval": {
+            "accuracy_score": 25,
+            "accuracy_label": "Incorrect",
+            "reasoning": "Out of 4 factual claims evaluated: 1 fully correct, 0 partially correct, 2 unverified/incorrect, and 1 contradictory. Overall accuracy is classified as 'Incorrect' (25/100).",
+            "correct_claims_count": 1,
+            "partially_correct_claims_count": 0,
+            "incorrect_claims_count": 2,
+            "contradictory_claims_count": 1,
+            "supporting_evidence": [
+              "Hepatitis A virus (HAV) infection causes acute hepatitis. Management is entirely supportive with hydration, nutrition, and rest. Hepatotoxic substances and paracetamol excess should be avoided.",
+              "No specific antiviral therapy exists; antibiotics are ineffective against viruses."
+            ]
+          },
+          "hallucination_eval": {
+            "is_hallucinated": true,
+            "hallucination_score": 25,
+            "hallucination_label": "Severe Hallucination",
+            "total_claims_analyzed": 4,
+            "flagged_claims_count": 1,
+            "flagged_claims": [
+              {
+                "claim_id": 4,
+                "claim_text": "Antibiotics and antiviral agents have no therapeutic efficacy against HAV infection.",
+                "issue_type": "contradictory",
+                "explanation": "Claim directly contradicts trusted reference context (contradiction score: 54%). Negation or entity conflict detected.",
+                "conflicting_evidence": "No specific antiviral therapy exists; antibiotics are ineffective against viruses."
+              }
+            ],
+            "supporting_evidence": [
+              "Hepatitis A virus (HAV) infection causes acute hepatitis. Management is entirely supportive with hydration, nutrition, and rest. Hepatotoxic substances and paracetamol excess should be avoided.",
+              "No specific antiviral therapy exists; antibiotics are ineffective against viruses."
+            ],
+            "reasoning": "Detected 1 potential hallucination(s) out of 4 claim(s). (1 contradictory, 0 unsupported). Overall hallucination risk level is classified as 'Severe Hallucination' (25% risk)."
+          },
+          "completeness_eval": {
+            "completeness_score": 50,
+            "completeness_label": "Partially Complete",
+            "reasoning": "The response only partially answers the prompt. It addresses some aspects (1 covered), but fails to cover key requirements: 'What are the core treatments'.",
+            "addressed_aspects": [
+              "contraindications for acute viral hepatitis A"
+            ],
+            "partially_addressed_aspects": [],
+            "missing_aspects": [
+              "What are the core treatments"
+            ],
+            "expected_info_sources": [
+              "Direct Reference Answer",
+              "Evidence: No specific antiviral therapy exists; antibiotics ...",
+              "Evidence: Hepatitis A virus (HAV) infection causes acute hep..."
+            ]
+          },
+          "verdict_eval": {
+            "relevance_score": 64,
+            "accuracy_score": 25,
+            "hallucination_score": 25,
+            "hallucination_safety_score": 75,
+            "completeness_score": 50,
+            "weighted_overall_score": 53,
+            "verdict": "Fail",
+            "verdict_badge_color": "bg-red-500 text-white dark:bg-red-600",
+            "major_issues": [
+              "CRITICAL: Severe hallucination or unsupported claims detected.",
+              "CRITICAL: 1 claim(s) directly contradict trusted reference context.",
+              "COMPLETENESS: 1 question requirement(s)/sub-question(s) omitted.",
+              "ACCURACY: High proportion of inaccurate or unverified statements (25/100)."
+            ],
+            "consolidated_reasoning": "Overall evaluation verdict is 'Fail' with a weighted reliability score of 53/100. Dimension Scores \u2014 Relevance: 64/100 (Partially Relevant), Accuracy: 25/100 (Incorrect), Hallucination Risk: 25% (Severe Hallucination), Completeness: 50/100 (Partially Complete). Major issues identified: CRITICAL: Severe hallucination or unsupported claims detected.; CRITICAL: 1 claim(s) directly contradict trusted reference context.; COMPLETENESS: 1 question requirement(s)/sub-question(s) omitted.; ACCURACY: High proportion of inaccurate or unverified statements (25/100)."
+          }
+        }
+      },
+      {
+        "row_index": 3,
+        "id": "764680f1-bccf-412c-b3ff-2d0e295ced8e",
+        "query": "What is the boiling point of water at sea level and how does altitude affect it?",
+        "ai_response": "Pure water boils at 100 degrees Celsius (212 degrees Fahrenheit) at standard sea level atmospheric pressure of 1 atm. As altitude increases, atmospheric pressure decreases, causing the boiling point of water to drop below 100 degrees Celsius.",
+        "reference": "Standard atmospheric pressure at sea level corresponds to a boiling point for pure water of 100 degrees Celsius. At higher altitudes, reduced atmospheric pressure lowers the boiling point.",
+        "relevance_score": 82,
+        "accuracy_score": 0,
+        "hallucination_score": 50,
+        "completeness_score": 75,
+        "overall_score": 46,
+        "verdict": "Fail",
+        "status": "success",
+        "error_message": null,
+        "validation_report": {
+          "id": "5e44ba99-228b-40ae-a962-edb93d5c07fc",
+          "query": "What is the boiling point of water at sea level and how does altitude affect it?",
+          "ai_response": "Pure water boils at 100 degrees Celsius (212 degrees Fahrenheit) at standard sea level atmospheric pressure of 1 atm. As altitude increases, atmospheric pressure decreases, causing the boiling point of water to drop below 100 degrees Celsius.",
+          "reference": "Standard atmospheric pressure at sea level corresponds to a boiling point for pure water of 100 degrees Celsius. At higher altitudes, reduced atmospheric pressure lowers the boiling point.",
+          "claims": [
+            {
+              "id": 1,
+              "text": "Pure water boils at 100 degrees Celsius (212 degrees Fahrenheit) at standard sea level atmospheric pressure of 1 atm.",
+              "type": "potential",
+              "status": "contradictory",
+              "confidence_pct": 73,
+              "similarity_score": 0.771,
+              "contradiction_score": 0.8,
+              "evidence": "Standard atmospheric pressure at sea level corresponds to a boiling point for pure water of 100 degrees Celsius. At higher altitudes, reduced atmospheric pressure lowers the boiling point.",
+              "explanation": "The reference context appears to contradict this claim (confidence 73%). Negation signals and topic mismatch were detected between the claim and the reference. This claim is a potential hallucination \u2014 the AI may have generated an incorrect or misleading statement."
+            },
+            {
+              "id": 2,
+              "text": "As altitude increases, atmospheric pressure decreases, causing the boiling point of water to drop below 100 degrees Celsius.",
+              "type": "potential",
+              "status": "supported",
+              "confidence_pct": 88,
+              "similarity_score": 0.754,
+              "contradiction_score": 0.0,
+              "evidence": "Standard atmospheric pressure at sea level corresponds to a boiling point for pure water of 100 degrees Celsius. At higher altitudes, reduced atmospheric pressure lowers the boiling point.",
+              "explanation": "The reference context contains evidence that semantically aligns with this claim (confidence 88%). The key facts and entities in the claim match the trusted source material based on SentenceTransformer embedding similarity."
+            }
+          ],
+          "overall_score": 46,
+          "summary": "Overall evaluation verdict is 'Fail' with a weighted reliability score of 46/100. Dimension Scores \u2014 Relevance: 82/100 (Fully Relevant), Accuracy: 0/100 (Contradictory), Hallucination Risk: 50% (Severe Hallucination), Completeness: 75/100 (Substantially Complete). Major issues identified: CRITICAL: Severe hallucination or unsupported claims detected.; CRITICAL: 1 claim(s) directly contradict trusted reference context.; ACCURACY: High proportion of inaccurate or unverified statements (0/100).",
+          "label": "Fail",
+          "stats": {
+            "supported": 1,
+            "unsupported": 0,
+            "contradictory": 1,
+            "uncertain": 0,
+            "hallucination_risk": 50
+          },
+          "timestamp": "2026-09-29T07:26:19.913261+00:00",
+          "processing_time_ms": 278,
+          "relevance_eval": {
+            "relevance_score": 82,
+            "relevance_label": "Fully Relevant",
+            "reasoning": "The response directly and thoroughly addresses the question intent (Factual Definition / Explanation). Key question terms (boiling, point, water, sea) are prominently addressed with high semantic alignment (79%).",
+            "key_aspects_covered": [
+              "boiling",
+              "point",
+              "water",
+              "sea",
+              "level",
+              "altitude"
+            ],
+            "missing_aspects": [
+              "affect"
+            ],
+            "query_intent": "Factual Definition / Explanation"
+          },
+          "accuracy_eval": {
+            "accuracy_score": 0,
+            "accuracy_label": "Contradictory",
+            "reasoning": "Out of 2 factual claims evaluated: 0 fully correct, 0 partially correct, 1 unverified/incorrect, and 1 contradictory. Overall accuracy is classified as 'Contradictory' (0/100).",
+            "correct_claims_count": 0,
+            "partially_correct_claims_count": 0,
+            "incorrect_claims_count": 1,
+            "contradictory_claims_count": 1,
+            "supporting_evidence": [
+              "Standard atmospheric pressure at sea level corresponds to a boiling point for pure water of 100 degrees Celsius. At higher altitudes, reduced atmospheric pressure lowers the boiling point."
+            ]
+          },
+          "hallucination_eval": {
+            "is_hallucinated": true,
+            "hallucination_score": 50,
+            "hallucination_label": "Severe Hallucination",
+            "total_claims_analyzed": 2,
+            "flagged_claims_count": 1,
+            "flagged_claims": [
+              {
+                "claim_id": 1,
+                "claim_text": "Pure water boils at 100 degrees Celsius (212 degrees Fahrenheit) at standard sea level atmospheric pressure of 1 atm.",
+                "issue_type": "contradictory",
+                "explanation": "Claim directly contradicts trusted reference context (contradiction score: 80%). Negation or entity conflict detected.",
+                "conflicting_evidence": "Standard atmospheric pressure at sea level corresponds to a boiling point for pure water of 100 degrees Celsius. At higher altitudes, reduced atmospheric pressure lowers the boiling point."
+              }
+            ],
+            "supporting_evidence": [
+              "Standard atmospheric pressure at sea level corresponds to a boiling point for pure water of 100 degrees Celsius. At higher altitudes, reduced atmospheric pressure lowers the boiling point."
+            ],
+            "reasoning": "Detected 1 potential hallucination(s) out of 2 claim(s). (1 contradictory, 0 unsupported). Overall hallucination risk level is classified as 'Severe Hallucination' (50% risk)."
+          },
+          "completeness_eval": {
+            "completeness_score": 75,
+            "completeness_label": "Substantially Complete",
+            "reasoning": "The response addresses the core question and most key requirements (1/2 fully covered). However, minor details or sub-questions regarding 'how does altitude affect it' were omitted.",
+            "addressed_aspects": [
+              "What is the boiling point of water at sea level"
+            ],
+            "partially_addressed_aspects": [
+              "how does altitude affect it"
+            ],
+            "missing_aspects": [],
+            "expected_info_sources": [
+              "Direct Reference Answer",
+              "Evidence: Standard atmospheric pressure at sea level corresp..."
+            ]
+          },
+          "verdict_eval": {
+            "relevance_score": 82,
+            "accuracy_score": 0,
+            "hallucination_score": 50,
+            "hallucination_safety_score": 50,
+            "completeness_score": 75,
+            "weighted_overall_score": 46,
+            "verdict": "Fail",
+            "verdict_badge_color": "bg-red-500 text-white dark:bg-red-600",
+            "major_issues": [
+              "CRITICAL: Severe hallucination or unsupported claims detected.",
+              "CRITICAL: 1 claim(s) directly contradict trusted reference context.",
+              "ACCURACY: High proportion of inaccurate or unverified statements (0/100)."
+            ],
+            "consolidated_reasoning": "Overall evaluation verdict is 'Fail' with a weighted reliability score of 46/100. Dimension Scores \u2014 Relevance: 82/100 (Fully Relevant), Accuracy: 0/100 (Contradictory), Hallucination Risk: 50% (Severe Hallucination), Completeness: 75/100 (Substantially Complete). Major issues identified: CRITICAL: Severe hallucination or unsupported claims detected.; CRITICAL: 1 claim(s) directly contradict trusted reference context.; ACCURACY: High proportion of inaccurate or unverified statements (0/100)."
+          }
+        }
+      },
+      {
+        "row_index": 4,
+        "id": "6a857b6a-638a-4033-a9ad-6208de10a6be",
+        "query": "Who invented the World Wide Web, when, and where was it invented?",
+        "ai_response": "Tim Berners-Lee invented the World Wide Web in 1989 while working at CERN in Geneva, Switzerland.",
+        "reference": "Tim Berners-Lee invented the World Wide Web in 1989 at CERN in Geneva.",
+        "relevance_score": 88,
+        "accuracy_score": 100,
+        "hallucination_score": 0,
+        "completeness_score": 75,
+        "overall_score": 93,
+        "verdict": "Pass",
+        "status": "success",
+        "error_message": null,
+        "validation_report": {
+          "id": "9f47523a-186e-4e9b-9805-3a673e58fa40",
+          "query": "Who invented the World Wide Web, when, and where was it invented?",
+          "ai_response": "Tim Berners-Lee invented the World Wide Web in 1989 while working at CERN in Geneva, Switzerland.",
+          "reference": "Tim Berners-Lee invented the World Wide Web in 1989 at CERN in Geneva.",
+          "claims": [
+            {
+              "id": 1,
+              "text": "Tim Berners-Lee invented the World Wide Web in 1989 while working at CERN in Geneva, Switzerland.",
+              "type": "factual",
+              "status": "supported",
+              "confidence_pct": 99,
+              "similarity_score": 0.987,
+              "contradiction_score": 0.0,
+              "evidence": "Tim Berners-Lee invented the World Wide Web in 1989 at CERN in Geneva.",
+              "explanation": "The reference context contains evidence that semantically aligns with this claim (confidence 99%). The key facts and entities in the claim match the trusted source material based on SentenceTransformer embedding similarity."
+            }
+          ],
+          "overall_score": 93,
+          "summary": "Overall evaluation verdict is 'Pass' with a weighted reliability score of 93/100. Dimension Scores \u2014 Relevance: 88/100 (Fully Relevant), Accuracy: 100/100 (Correct), Hallucination Risk: 0% (No Hallucination), Completeness: 75/100 (Substantially Complete). Response demonstrates strong factual grounding, high relevance, and comprehensive question coverage.",
+          "label": "Pass",
+          "stats": {
+            "supported": 1,
+            "unsupported": 0,
+            "contradictory": 0,
+            "uncertain": 0,
+            "hallucination_risk": 0
+          },
+          "timestamp": "2026-09-29T07:26:20.067053+00:00",
+          "processing_time_ms": 154,
+          "relevance_eval": {
+            "relevance_score": 88,
+            "relevance_label": "Fully Relevant",
+            "reasoning": "The response directly and thoroughly addresses the question intent (Person / Entity Identification). Key question terms (invented, world, wide, web) are prominently addressed with high semantic alignment (80%).",
+            "key_aspects_covered": [
+              "invented",
+              "world",
+              "wide",
+              "web",
+              "invented"
+            ],
+            "missing_aspects": [],
+            "query_intent": "Person / Entity Identification"
+          },
+          "accuracy_eval": {
+            "accuracy_score": 100,
+            "accuracy_label": "Correct",
+            "reasoning": "Out of 1 factual claim evaluated: 1 fully correct, 0 partially correct, 0 unverified/incorrect, and 0 contradictory. Overall accuracy is classified as 'Correct' (100/100).",
+            "correct_claims_count": 1,
+            "partially_correct_claims_count": 0,
+            "incorrect_claims_count": 0,
+            "contradictory_claims_count": 0,
+            "supporting_evidence": [
+              "Tim Berners-Lee invented the World Wide Web in 1989 at CERN in Geneva."
+            ]
+          },
+          "hallucination_eval": {
+            "is_hallucinated": false,
+            "hallucination_score": 0,
+            "hallucination_label": "No Hallucination",
+            "total_claims_analyzed": 1,
+            "flagged_claims_count": 0,
+            "flagged_claims": [],
+            "supporting_evidence": [
+              "Tim Berners-Lee invented the World Wide Web in 1989 at CERN in Geneva."
+            ],
+            "reasoning": "All 1 factual claim in the AI response were verified against reference sources with high confidence. No hallucinations detected."
+          },
+          "completeness_eval": {
+            "completeness_score": 75,
+            "completeness_label": "Substantially Complete",
+            "reasoning": "The response addresses the core question and most key requirements (1/2 fully covered). However, minor details or sub-questions regarding 'where was it invented' were omitted.",
+            "addressed_aspects": [
+              "Who invented the World Wide Web"
+            ],
+            "partially_addressed_aspects": [
+              "where was it invented"
+            ],
+            "missing_aspects": [],
+            "expected_info_sources": [
+              "Direct Reference Answer",
+              "Evidence: Tim Berners-Lee invented the World Wide Web in 198..."
+            ]
+          },
+          "verdict_eval": {
+            "relevance_score": 88,
+            "accuracy_score": 100,
+            "hallucination_score": 0,
+            "hallucination_safety_score": 100,
+            "completeness_score": 75,
+            "weighted_overall_score": 93,
+            "verdict": "Pass",
+            "verdict_badge_color": "bg-emerald-500 text-white dark:bg-emerald-600",
+            "major_issues": [],
+            "consolidated_reasoning": "Overall evaluation verdict is 'Pass' with a weighted reliability score of 93/100. Dimension Scores \u2014 Relevance: 88/100 (Fully Relevant), Accuracy: 100/100 (Correct), Hallucination Risk: 0% (No Hallucination), Completeness: 75/100 (Substantially Complete). Response demonstrates strong factual grounding, high relevance, and comprehensive question coverage."
+          }
+        }
+      },
+      {
+        "row_index": 5,
+        "id": "7282517c-0474-47d5-b38a-8c0e20ed189f",
+        "query": "Explain the cause of World War I, key battles, and the Treaty of Versailles outcome.",
+        "ai_response": "World War I was triggered by the assassination of Archduke Franz Ferdinand in Sarajevo in June 1914. Major battles included the Battle of the Somme, Verdun, and Marne. The war concluded with the Treaty of Versailles in 1919, which imposed heavy reparations and territorial losses on Germany.",
+        "reference": "World War I was triggered by the assassination of Archduke Franz Ferdinand in 1914. Key battles included the Somme and Verdun. The Treaty of Versailles imposed harsh penalties on Germany in 1919.",
+        "relevance_score": 64,
+        "accuracy_score": 75,
+        "hallucination_score": 0,
+        "completeness_score": 100,
+        "overall_score": 85,
+        "verdict": "Pass",
+        "status": "success",
+        "error_message": null,
+        "validation_report": {
+          "id": "153817f1-b137-4e31-bd0d-9409cacf09f1",
+          "query": "Explain the cause of World War I, key battles, and the Treaty of Versailles outcome.",
+          "ai_response": "World War I was triggered by the assassination of Archduke Franz Ferdinand in Sarajevo in June 1914. Major battles included the Battle of the Somme, Verdun, and Marne. The war concluded with the Treaty of Versailles in 1919, which imposed heavy reparations and territorial losses on Germany.",
+          "reference": "World War I was triggered by the assassination of Archduke Franz Ferdinand in 1914. Key battles included the Somme and Verdun. The Treaty of Versailles imposed harsh penalties on Germany in 1919.",
+          "claims": [
+            {
+              "id": 1,
+              "text": "World War I was triggered by the assassination of Archduke Franz Ferdinand in Sarajevo in June 1914.",
+              "type": "factual",
+              "status": "supported",
+              "confidence_pct": 92,
+              "similarity_score": 0.849,
+              "contradiction_score": 0.0,
+              "evidence": "World War I was triggered by the assassination of Archduke Franz Ferdinand in 1914. Key battles included the Somme and Verdun. The Treaty of Versailles imposed harsh penalties on Germany in 1919.",
+              "explanation": "The reference context contains evidence that semantically aligns with this claim (confidence 92%). The key facts and entities in the claim match the trusted source material based on SentenceTransformer embedding similarity."
+            },
+            {
+              "id": 2,
+              "text": "The war concluded with the Treaty of Versailles in 1919, which imposed heavy reparations and territorial losses on Germany.",
+              "type": "factual",
+              "status": "uncertain",
+              "confidence_pct": 76,
+              "similarity_score": 0.526,
+              "contradiction_score": 0.0,
+              "evidence": "World War I was triggered by the assassination of Archduke Franz Ferdinand in 1914. Key battles included the Somme and Verdun. The Treaty of Versailles imposed harsh penalties on Germany in 1919.",
+              "explanation": "The reference context is partially related but does not conclusively verify this claim (confidence 76%). The semantic similarity is moderate. Additional trusted sources should be consulted before relying on this statement."
+            }
+          ],
+          "overall_score": 85,
+          "summary": "Overall evaluation verdict is 'Pass' with a weighted reliability score of 85/100. Dimension Scores \u2014 Relevance: 64/100 (Partially Relevant), Accuracy: 75/100 (Partially Correct), Hallucination Risk: 0% (No Hallucination), Completeness: 100/100 (Fully Complete). Response demonstrates strong factual grounding, high relevance, and comprehensive question coverage.",
+          "label": "Pass",
+          "stats": {
+            "supported": 1,
+            "unsupported": 0,
+            "contradictory": 0,
+            "uncertain": 1,
+            "hallucination_risk": 0
+          },
+          "timestamp": "2026-09-29T07:26:20.379843+00:00",
+          "processing_time_ms": 313,
+          "relevance_eval": {
+            "relevance_score": 64,
+            "relevance_label": "Partially Relevant",
+            "reasoning": "The response is partially relevant to the question intent (General Information Request). It addresses aspects like world, war, battles, but misses specific details regarding explain, cause, key.",
+            "key_aspects_covered": [
+              "world",
+              "war",
+              "battles",
+              "treaty",
+              "versailles"
+            ],
+            "missing_aspects": [
+              "explain",
+              "cause",
+              "key",
+              "outcome"
+            ],
+            "query_intent": "General Information Request"
+          },
+          "accuracy_eval": {
+            "accuracy_score": 75,
+            "accuracy_label": "Partially Correct",
+            "reasoning": "Out of 2 factual claims evaluated: 1 fully correct, 1 partially correct, 0 unverified/incorrect, and 0 contradictory. Overall accuracy is classified as 'Partially Correct' (75/100).",
+            "correct_claims_count": 1,
+            "partially_correct_claims_count": 1,
+            "incorrect_claims_count": 0,
+            "contradictory_claims_count": 0,
+            "supporting_evidence": [
+              "World War I was triggered by the assassination of Archduke Franz Ferdinand in 1914. Key battles included the Somme and Verdun. The Treaty of Versailles imposed harsh penalties on Germany in 1919."
+            ]
+          },
+          "hallucination_eval": {
+            "is_hallucinated": false,
+            "hallucination_score": 0,
+            "hallucination_label": "No Hallucination",
+            "total_claims_analyzed": 2,
+            "flagged_claims_count": 0,
+            "flagged_claims": [],
+            "supporting_evidence": [
+              "World War I was triggered by the assassination of Archduke Franz Ferdinand in 1914. Key battles included the Somme and Verdun. The Treaty of Versailles imposed harsh penalties on Germany in 1919."
+            ],
+            "reasoning": "All 2 factual claims in the AI response were verified against reference sources with high confidence. No hallucinations detected."
+          },
+          "completeness_eval": {
+            "completeness_score": 100,
+            "completeness_label": "Fully Complete",
+            "reasoning": "The AI response thoroughly addresses all 3 sub-questions and requirements contained in the prompt. No significant omissions were detected.",
+            "addressed_aspects": [
+              "Explain the cause of World War I",
+              "key battles",
+              "the Treaty of Versailles outcome."
+            ],
+            "partially_addressed_aspects": [],
+            "missing_aspects": [],
+            "expected_info_sources": [
+              "Direct Reference Answer",
+              "Evidence: World War I was triggered by the assassination of ..."
+            ]
+          },
+          "verdict_eval": {
+            "relevance_score": 64,
+            "accuracy_score": 75,
+            "hallucination_score": 0,
+            "hallucination_safety_score": 100,
+            "completeness_score": 100,
+            "weighted_overall_score": 85,
+            "verdict": "Pass",
+            "verdict_badge_color": "bg-emerald-500 text-white dark:bg-emerald-600",
+            "major_issues": [],
+            "consolidated_reasoning": "Overall evaluation verdict is 'Pass' with a weighted reliability score of 85/100. Dimension Scores \u2014 Relevance: 64/100 (Partially Relevant), Accuracy: 75/100 (Partially Correct), Hallucination Risk: 0% (No Hallucination), Completeness: 100/100 (Fully Complete). Response demonstrates strong factual grounding, high relevance, and comprehensive question coverage."
+          }
+        }
+      },
+      {
+        "row_index": 6,
+        "id": "af5b4d8b-9a3b-4a45-960e-3b9020477f6d",
+        "query": "Can antibiotics cure viral infections such as influenza or the common cold?",
+        "ai_response": "No, antibiotics cannot cure viral infections like influenza or the common cold. Antibiotics specifically target bacterial structures such as cell walls and bacterial ribosomes, which viruses do not possess. Taking antibiotics for viral illnesses provides no clinical benefit and accelerates antibiotic resistance.",
+        "reference": "Antibiotics are solely effective against bacterial infections and have no pharmacological activity against viruses like influenza or the common cold.",
+        "relevance_score": 91,
+        "accuracy_score": 0,
+        "hallucination_score": 100,
+        "completeness_score": 100,
+        "overall_score": 38,
+        "verdict": "Fail",
+        "status": "success",
+        "error_message": null,
+        "validation_report": {
+          "id": "1333c003-42f9-4f47-8705-ac012c1577e6",
+          "query": "Can antibiotics cure viral infections such as influenza or the common cold?",
+          "ai_response": "No, antibiotics cannot cure viral infections like influenza or the common cold. Antibiotics specifically target bacterial structures such as cell walls and bacterial ribosomes, which viruses do not possess. Taking antibiotics for viral illnesses provides no clinical benefit and accelerates antibiotic resistance.",
+          "reference": "Antibiotics are solely effective against bacterial infections and have no pharmacological activity against viruses like influenza or the common cold.",
+          "claims": [
+            {
+              "id": 1,
+              "text": "Antibiotics specifically target bacterial structures such as cell walls and bacterial ribosomes, which viruses do not possess.",
+              "type": "factual",
+              "status": "contradictory",
+              "confidence_pct": 74,
+              "similarity_score": 0.706,
+              "contradiction_score": 0.54,
+              "evidence": "Antibiotics are solely effective against bacterial infections and have no pharmacological activity against viruses like influenza or the common cold.",
+              "explanation": "The reference context appears to contradict this claim (confidence 74%). Negation signals and topic mismatch were detected between the claim and the reference. This claim is a potential hallucination \u2014 the AI may have generated an incorrect or misleading statement."
+            }
+          ],
+          "overall_score": 38,
+          "summary": "Overall evaluation verdict is 'Fail' with a weighted reliability score of 38/100. Dimension Scores \u2014 Relevance: 91/100 (Fully Relevant), Accuracy: 0/100 (Contradictory), Hallucination Risk: 100% (Severe Hallucination), Completeness: 100/100 (Fully Complete). Major issues identified: CRITICAL: Severe hallucination or unsupported claims detected.; CRITICAL: 1 claim(s) directly contradict trusted reference context.; ACCURACY: High proportion of inaccurate or unverified statements (0/100).",
+          "label": "Fail",
+          "stats": {
+            "supported": 0,
+            "unsupported": 0,
+            "contradictory": 1,
+            "uncertain": 0,
+            "hallucination_risk": 100
+          },
+          "timestamp": "2026-09-29T07:26:20.565653+00:00",
+          "processing_time_ms": 186,
+          "relevance_eval": {
+            "relevance_score": 91,
+            "relevance_label": "Fully Relevant",
+            "reasoning": "The response directly and thoroughly addresses the question intent (Capability / Feasibility). Key question terms (can, antibiotics, cure, viral) are prominently addressed with high semantic alignment (84%).",
+            "key_aspects_covered": [
+              "can",
+              "antibiotics",
+              "cure",
+              "viral",
+              "infections",
+              "such",
+              "influenza",
+              "common",
+              "cold"
+            ],
+            "missing_aspects": [],
+            "query_intent": "Capability / Feasibility"
+          },
+          "accuracy_eval": {
+            "accuracy_score": 0,
+            "accuracy_label": "Contradictory",
+            "reasoning": "Out of 1 factual claim evaluated: 0 fully correct, 0 partially correct, 0 unverified/incorrect, and 1 contradictory. Overall accuracy is classified as 'Contradictory' (0/100).",
+            "correct_claims_count": 0,
+            "partially_correct_claims_count": 0,
+            "incorrect_claims_count": 0,
+            "contradictory_claims_count": 1,
+            "supporting_evidence": [
+              "Antibiotics are solely effective against bacterial infections and have no pharmacological activity against viruses like influenza or the common cold."
+            ]
+          },
+          "hallucination_eval": {
+            "is_hallucinated": true,
+            "hallucination_score": 100,
+            "hallucination_label": "Severe Hallucination",
+            "total_claims_analyzed": 1,
+            "flagged_claims_count": 1,
+            "flagged_claims": [
+              {
+                "claim_id": 1,
+                "claim_text": "Antibiotics specifically target bacterial structures such as cell walls and bacterial ribosomes, which viruses do not possess.",
+                "issue_type": "contradictory",
+                "explanation": "Claim directly contradicts trusted reference context (contradiction score: 54%). Negation or entity conflict detected.",
+                "conflicting_evidence": "Antibiotics are solely effective against bacterial infections and have no pharmacological activity against viruses like influenza or the common cold."
+              }
+            ],
+            "supporting_evidence": [
+              "Antibiotics are solely effective against bacterial infections and have no pharmacological activity against viruses like influenza or the common cold."
+            ],
+            "reasoning": "Detected 1 potential hallucination(s) out of 1 claim(s). (1 contradictory, 0 unsupported). Overall hallucination risk level is classified as 'Severe Hallucination' (100% risk)."
+          },
+          "completeness_eval": {
+            "completeness_score": 100,
+            "completeness_label": "Fully Complete",
+            "reasoning": "The AI response thoroughly addresses all 1 sub-questions and requirements contained in the prompt. No significant omissions were detected.",
+            "addressed_aspects": [
+              "Can antibiotics cure viral infections such as influenza or the common cold"
+            ],
+            "partially_addressed_aspects": [],
+            "missing_aspects": [],
+            "expected_info_sources": [
+              "Direct Reference Answer",
+              "Evidence: Antibiotics are solely effective against bacterial..."
+            ]
+          },
+          "verdict_eval": {
+            "relevance_score": 91,
+            "accuracy_score": 0,
+            "hallucination_score": 100,
+            "hallucination_safety_score": 0,
+            "completeness_score": 100,
+            "weighted_overall_score": 38,
+            "verdict": "Fail",
+            "verdict_badge_color": "bg-red-500 text-white dark:bg-red-600",
+            "major_issues": [
+              "CRITICAL: Severe hallucination or unsupported claims detected.",
+              "CRITICAL: 1 claim(s) directly contradict trusted reference context.",
+              "ACCURACY: High proportion of inaccurate or unverified statements (0/100)."
+            ],
+            "consolidated_reasoning": "Overall evaluation verdict is 'Fail' with a weighted reliability score of 38/100. Dimension Scores \u2014 Relevance: 91/100 (Fully Relevant), Accuracy: 0/100 (Contradictory), Hallucination Risk: 100% (Severe Hallucination), Completeness: 100/100 (Fully Complete). Major issues identified: CRITICAL: Severe hallucination or unsupported claims detected.; CRITICAL: 1 claim(s) directly contradict trusted reference context.; ACCURACY: High proportion of inaccurate or unverified statements (0/100)."
+          }
+        }
+      },
+      {
+        "row_index": 7,
+        "id": "7cfadbeb-bba9-41fe-9684-7d4739c3a807",
+        "query": "Who discovered penicillin, in what year, and what type of organism produces it?",
+        "ai_response": "Sir Alexander Fleming discovered penicillin in 1928 at St. Mary's Hospital in London. Penicillin is naturally produced by the Penicillium notatum fungus (mold).",
+        "reference": "Alexander Fleming discovered penicillin in 1928, isolated from the Penicillium mold fungus.",
+        "relevance_score": 62,
+        "accuracy_score": 35,
+        "hallucination_score": 0,
+        "completeness_score": 33,
+        "overall_score": 60,
+        "verdict": "Needs Improvement",
+        "status": "success",
+        "error_message": null,
+        "validation_report": {
+          "id": "f9c644a3-4326-48be-a023-d55b771a7d66",
+          "query": "Who discovered penicillin, in what year, and what type of organism produces it?",
+          "ai_response": "Sir Alexander Fleming discovered penicillin in 1928 at St. Mary's Hospital in London. Penicillin is naturally produced by the Penicillium notatum fungus (mold).",
+          "reference": "Alexander Fleming discovered penicillin in 1928, isolated from the Penicillium mold fungus.",
+          "claims": [
+            {
+              "id": 1,
+              "text": "Sir Alexander Fleming discovered penicillin in 1928 at St. Mary's Hospital in London.",
+              "type": "factual",
+              "status": "supported",
+              "confidence_pct": 92,
+              "similarity_score": 0.834,
+              "contradiction_score": 0.0,
+              "evidence": "Alexander Fleming discovered penicillin in 1928, isolated from the Penicillium mold fungus.",
+              "explanation": "The reference context contains evidence that semantically aligns with this claim (confidence 92%). The key facts and entities in the claim match the trusted source material based on SentenceTransformer embedding similarity."
+            },
+            {
+              "id": 2,
+              "text": "Penicillin is naturally produced by the Penicillium notatum fungus (mold).",
+              "type": "factual",
+              "status": "supported",
+              "confidence_pct": 85,
+              "similarity_score": 0.705,
+              "contradiction_score": 0.0,
+              "evidence": "Alexander Fleming discovered penicillin in 1928, isolated from the Penicillium mold fungus.",
+              "explanation": "The reference context contains evidence that semantically aligns with this claim (confidence 85%). The key facts and entities in the claim match the trusted source material based on SentenceTransformer embedding similarity."
+            }
+          ],
+          "overall_score": 60,
+          "summary": "Overall evaluation verdict is 'Needs Improvement' with a weighted reliability score of 60/100. Dimension Scores \u2014 Relevance: 62/100 (Partially Relevant), Accuracy: 35/100 (Incorrect), Hallucination Risk: 0% (No Hallucination), Completeness: 33/100 (Incomplete). Major issues identified: COMPLETENESS: 2 question requirement(s)/sub-question(s) omitted.; ACCURACY: High proportion of inaccurate or unverified statements (35/100).",
+          "label": "Needs Improvement",
+          "stats": {
+            "supported": 2,
+            "unsupported": 0,
+            "contradictory": 0,
+            "uncertain": 0,
+            "hallucination_risk": 0
+          },
+          "timestamp": "2026-09-29T07:26:20.835183+00:00",
+          "processing_time_ms": 268,
+          "relevance_eval": {
+            "relevance_score": 62,
+            "relevance_label": "Partially Relevant",
+            "reasoning": "The response is partially relevant to the question intent (Person / Entity Identification). It addresses aspects like discovered, penicillin, but misses specific details regarding year, type, organism.",
+            "key_aspects_covered": [
+              "discovered",
+              "penicillin"
+            ],
+            "missing_aspects": [
+              "year",
+              "type",
+              "organism",
+              "produces"
+            ],
+            "query_intent": "Person / Entity Identification"
+          },
+          "accuracy_eval": {
+            "accuracy_score": 35,
+            "accuracy_label": "Incorrect",
+            "reasoning": "Out of 2 factual claims evaluated: 0 fully correct, 1 partially correct, 1 unverified/incorrect, and 0 contradictory. Overall accuracy is classified as 'Incorrect' (35/100).",
+            "correct_claims_count": 0,
+            "partially_correct_claims_count": 1,
+            "incorrect_claims_count": 1,
+            "contradictory_claims_count": 0,
+            "supporting_evidence": [
+              "Alexander Fleming discovered penicillin in 1928, isolated from the Penicillium mold fungus."
+            ]
+          },
+          "hallucination_eval": {
+            "is_hallucinated": false,
+            "hallucination_score": 0,
+            "hallucination_label": "No Hallucination",
+            "total_claims_analyzed": 2,
+            "flagged_claims_count": 0,
+            "flagged_claims": [],
+            "supporting_evidence": [
+              "Alexander Fleming discovered penicillin in 1928, isolated from the Penicillium mold fungus."
+            ],
+            "reasoning": "All 2 factual claims in the AI response were verified against reference sources with high confidence. No hallucinations detected."
+          },
+          "completeness_eval": {
+            "completeness_score": 33,
+            "completeness_label": "Incomplete",
+            "reasoning": "The response is substantially incomplete. Out of 3 requirement(s), it missed or failed to adequately answer 2 aspect(s).",
+            "addressed_aspects": [
+              "Who discovered penicillin"
+            ],
+            "partially_addressed_aspects": [],
+            "missing_aspects": [
+              "in what year",
+              "what type of organism produces it"
+            ],
+            "expected_info_sources": [
+              "Direct Reference Answer",
+              "Evidence: Alexander Fleming discovered penicillin in 1928, i..."
+            ]
+          },
+          "verdict_eval": {
+            "relevance_score": 62,
+            "accuracy_score": 35,
+            "hallucination_score": 0,
+            "hallucination_safety_score": 100,
+            "completeness_score": 33,
+            "weighted_overall_score": 60,
+            "verdict": "Needs Improvement",
+            "verdict_badge_color": "bg-amber-500 text-white dark:bg-amber-600",
+            "major_issues": [
+              "COMPLETENESS: 2 question requirement(s)/sub-question(s) omitted.",
+              "ACCURACY: High proportion of inaccurate or unverified statements (35/100)."
+            ],
+            "consolidated_reasoning": "Overall evaluation verdict is 'Needs Improvement' with a weighted reliability score of 60/100. Dimension Scores \u2014 Relevance: 62/100 (Partially Relevant), Accuracy: 35/100 (Incorrect), Hallucination Risk: 0% (No Hallucination), Completeness: 33/100 (Incomplete). Major issues identified: COMPLETENESS: 2 question requirement(s)/sub-question(s) omitted.; ACCURACY: High proportion of inaccurate or unverified statements (35/100)."
+          }
+        }
+      }
+    ]
+  },
+  "system_b": {
+    "batch_id": "2c901b90-ade7-486f-8cdc-f709cfb3096d",
+    "timestamp": "2026-09-29T07:26:22.158557+00:00",
+    "total_records": 6,
+    "valid_records": 6,
+    "failed_records": 0,
+    "pass_count": 0,
+    "needs_improvement_count": 2,
+    "fail_count": 4,
+    "avg_relevance": 68.0,
+    "avg_accuracy": 25.0,
+    "avg_hallucination_risk": 62.5,
+    "avg_completeness": 63.8,
+    "avg_overall_score": 45.0,
+    "hallucination_rate_pct": 66.7,
+    "results": [
+      {
+        "row_index": 2,
+        "id": "1cb9ad08-28c1-4392-b046-fc2917b1ca4d",
+        "query": "What are the core treatments and contraindications for acute viral hepatitis A?",
+        "ai_response": "Hepatitis A is treated immediately with high-dose intravenous amoxicillin to eradicate the viral strain within 48 hours. Patients must undergo routine interferon-alpha therapy to prevent chronic progression to liver cirrhosis. Drinking alcohol in moderation is permissible during recovery.",
+        "reference": "Hepatitis A virus (HAV) infection causes acute hepatitis. Management is entirely supportive with hydration, nutrition, and rest. Hepatotoxic substances and paracetamol excess should be avoided. No specific antiviral therapy exists; antibiotics are ineffective against viruses.",
+        "relevance_score": 53,
+        "accuracy_score": 0,
+        "hallucination_score": 75,
+        "completeness_score": 50,
+        "overall_score": 28,
+        "verdict": "Fail",
+        "status": "success",
+        "error_message": null,
+        "validation_report": {
+          "id": "d42cdd5c-bb36-47df-b7ef-3a3f7678efad",
+          "query": "What are the core treatments and contraindications for acute viral hepatitis A?",
+          "ai_response": "Hepatitis A is treated immediately with high-dose intravenous amoxicillin to eradicate the viral strain within 48 hours. Patients must undergo routine interferon-alpha therapy to prevent chronic progression to liver cirrhosis. Drinking alcohol in moderation is permissible during recovery.",
+          "reference": "Hepatitis A virus (HAV) infection causes acute hepatitis. Management is entirely supportive with hydration, nutrition, and rest. Hepatotoxic substances and paracetamol excess should be avoided. No specific antiviral therapy exists; antibiotics are ineffective against viruses.",
+          "claims": [
+            {
+              "id": 1,
+              "text": "Hepatitis A is treated immediately with high-dose intravenous amoxicillin to eradicate the viral strain within 48 hours.",
+              "type": "factual",
+              "status": "contradictory",
+              "confidence_pct": 66,
+              "similarity_score": 0.544,
+              "contradiction_score": 0.54,
+              "evidence": "Hepatitis A virus (HAV) infection causes acute hepatitis. Management is entirely supportive with hydration, nutrition, and rest. Hepatotoxic substances and paracetamol excess should be avoided.",
+              "explanation": "The reference context appears to contradict this claim (confidence 66%). Negation signals and topic mismatch were detected between the claim and the reference. This claim is a potential hallucination \u2014 the AI may have generated an incorrect or misleading statement."
+            },
+            {
+              "id": 2,
+              "text": "Drinking alcohol in moderation is permissible during recovery.",
+              "type": "factual",
+              "status": "unsupported",
+              "confidence_pct": 58,
+              "similarity_score": 0.222,
+              "contradiction_score": 0.15,
+              "evidence": "Hepatitis A virus (HAV) infection causes acute hepatitis. Management is entirely supportive with hydration, nutrition, and rest. Hepatotoxic substances and paracetamol excess should be avoided.",
+              "explanation": "No matching evidence was found in the provided reference context (confidence 58%). The claim may be accurate but cannot be verified against the available sources. This does not necessarily mean the claim is false \u2014 only that it is unverified."
+            }
+          ],
+          "overall_score": 28,
+          "summary": "Overall evaluation verdict is 'Fail' with a weighted reliability score of 28/100. Dimension Scores \u2014 Relevance: 53/100 (Partially Relevant), Accuracy: 0/100 (Contradictory), Hallucination Risk: 75% (Severe Hallucination), Completeness: 50/100 (Partially Complete). Major issues identified: CRITICAL: Severe hallucination or unsupported claims detected.; CRITICAL: 1 claim(s) directly contradict trusted reference context.; COMPLETENESS: 1 question requirement(s)/sub-question(s) omitted.; ACCURACY: High proportion of inaccurate or unverified statements (0/100).",
+          "label": "Fail",
+          "stats": {
+            "supported": 0,
+            "unsupported": 1,
+            "contradictory": 1,
+            "uncertain": 0,
+            "hallucination_risk": 75
+          },
+          "timestamp": "2026-09-29T07:26:21.157195+00:00",
+          "processing_time_ms": 321,
+          "relevance_eval": {
+            "relevance_score": 53,
+            "relevance_label": "Partially Relevant",
+            "reasoning": "The response is partially relevant to the question intent (Factual Definition / Explanation). It addresses aspects like viral, hepatitis, but misses specific details regarding core, treatments, contraindications.",
+            "key_aspects_covered": [
+              "viral",
+              "hepatitis"
+            ],
+            "missing_aspects": [
+              "core",
+              "treatments",
+              "contraindications",
+              "acute"
+            ],
+            "query_intent": "Factual Definition / Explanation"
+          },
+          "accuracy_eval": {
+            "accuracy_score": 0,
+            "accuracy_label": "Contradictory",
+            "reasoning": "Out of 2 factual claims evaluated: 0 fully correct, 0 partially correct, 1 unverified/incorrect, and 1 contradictory. Overall accuracy is classified as 'Contradictory' (0/100).",
+            "correct_claims_count": 0,
+            "partially_correct_claims_count": 0,
+            "incorrect_claims_count": 1,
+            "contradictory_claims_count": 1,
+            "supporting_evidence": [
+              "Hepatitis A virus (HAV) infection causes acute hepatitis. Management is entirely supportive with hydration, nutrition, and rest. Hepatotoxic substances and paracetamol excess should be avoided."
+            ]
+          },
+          "hallucination_eval": {
+            "is_hallucinated": true,
+            "hallucination_score": 75,
+            "hallucination_label": "Severe Hallucination",
+            "total_claims_analyzed": 2,
+            "flagged_claims_count": 2,
+            "flagged_claims": [
+              {
+                "claim_id": 1,
+                "claim_text": "Hepatitis A is treated immediately with high-dose intravenous amoxicillin to eradicate the viral strain within 48 hours.",
+                "issue_type": "contradictory",
+                "explanation": "Claim directly contradicts trusted reference context (contradiction score: 54%). Negation or entity conflict detected.",
+                "conflicting_evidence": "Hepatitis A virus (HAV) infection causes acute hepatitis. Management is entirely supportive with hydration, nutrition, and rest. Hepatotoxic substances and paracetamol excess should be avoided."
+              },
+              {
+                "claim_id": 2,
+                "claim_text": "Drinking alcohol in moderation is permissible during recovery.",
+                "issue_type": "unsupported",
+                "explanation": "Claim is unsupported by available reference sources (semantic similarity: 22%). No matching evidence found.",
+                "conflicting_evidence": null
+              }
+            ],
+            "supporting_evidence": [
+              "Hepatitis A virus (HAV) infection causes acute hepatitis. Management is entirely supportive with hydration, nutrition, and rest. Hepatotoxic substances and paracetamol excess should be avoided."
+            ],
+            "reasoning": "Detected 2 potential hallucination(s) out of 2 claim(s). (1 contradictory, 1 unsupported). Overall hallucination risk level is classified as 'Severe Hallucination' (75% risk)."
+          },
+          "completeness_eval": {
+            "completeness_score": 50,
+            "completeness_label": "Partially Complete",
+            "reasoning": "The response only partially answers the prompt. It addresses some aspects (1 covered), but fails to cover key requirements: 'What are the core treatments'.",
+            "addressed_aspects": [
+              "contraindications for acute viral hepatitis A"
+            ],
+            "partially_addressed_aspects": [],
+            "missing_aspects": [
+              "What are the core treatments"
+            ],
+            "expected_info_sources": [
+              "Direct Reference Answer",
+              "Evidence: No specific antiviral therapy exists; antibiotics ...",
+              "Evidence: Hepatitis A virus (HAV) infection causes acute hep..."
+            ]
+          },
+          "verdict_eval": {
+            "relevance_score": 53,
+            "accuracy_score": 0,
+            "hallucination_score": 75,
+            "hallucination_safety_score": 25,
+            "completeness_score": 50,
+            "weighted_overall_score": 28,
+            "verdict": "Fail",
+            "verdict_badge_color": "bg-red-500 text-white dark:bg-red-600",
+            "major_issues": [
+              "CRITICAL: Severe hallucination or unsupported claims detected.",
+              "CRITICAL: 1 claim(s) directly contradict trusted reference context.",
+              "COMPLETENESS: 1 question requirement(s)/sub-question(s) omitted.",
+              "ACCURACY: High proportion of inaccurate or unverified statements (0/100)."
+            ],
+            "consolidated_reasoning": "Overall evaluation verdict is 'Fail' with a weighted reliability score of 28/100. Dimension Scores \u2014 Relevance: 53/100 (Partially Relevant), Accuracy: 0/100 (Contradictory), Hallucination Risk: 75% (Severe Hallucination), Completeness: 50/100 (Partially Complete). Major issues identified: CRITICAL: Severe hallucination or unsupported claims detected.; CRITICAL: 1 claim(s) directly contradict trusted reference context.; COMPLETENESS: 1 question requirement(s)/sub-question(s) omitted.; ACCURACY: High proportion of inaccurate or unverified statements (0/100)."
+          }
+        }
+      },
+      {
+        "row_index": 3,
+        "id": "c40456a1-e998-4bb2-afc1-bb5b3b30bf9a",
+        "query": "What is the boiling point of water at sea level and how does altitude affect it?",
+        "ai_response": "Pure water boils at 75 degrees Celsius at standard sea level. As you climb higher in altitude, atmospheric pressure increases exponentially, causing the boiling point of water to rise above 150 degrees Celsius.",
+        "reference": "Standard atmospheric pressure at sea level corresponds to a boiling point for pure water of 100 degrees Celsius. At higher altitudes, reduced atmospheric pressure lowers the boiling point.",
+        "relevance_score": 84,
+        "accuracy_score": 0,
+        "hallucination_score": 100,
+        "completeness_score": 75,
+        "overall_score": 32,
+        "verdict": "Fail",
+        "status": "success",
+        "error_message": null,
+        "validation_report": {
+          "id": "465bf9ec-18cf-4f91-9d41-596c54006a0b",
+          "query": "What is the boiling point of water at sea level and how does altitude affect it?",
+          "ai_response": "Pure water boils at 75 degrees Celsius at standard sea level. As you climb higher in altitude, atmospheric pressure increases exponentially, causing the boiling point of water to rise above 150 degrees Celsius.",
+          "reference": "Standard atmospheric pressure at sea level corresponds to a boiling point for pure water of 100 degrees Celsius. At higher altitudes, reduced atmospheric pressure lowers the boiling point.",
+          "claims": [
+            {
+              "id": 1,
+              "text": "Pure water boils at 75 degrees Celsius at standard sea level.",
+              "type": "potential",
+              "status": "contradictory",
+              "confidence_pct": 70,
+              "similarity_score": 0.71,
+              "contradiction_score": 0.8,
+              "evidence": "Standard atmospheric pressure at sea level corresponds to a boiling point for pure water of 100 degrees Celsius. At higher altitudes, reduced atmospheric pressure lowers the boiling point.",
+              "explanation": "The reference context appears to contradict this claim (confidence 70%). Negation signals and topic mismatch were detected between the claim and the reference. This claim is a potential hallucination \u2014 the AI may have generated an incorrect or misleading statement."
+            },
+            {
+              "id": 2,
+              "text": "As you climb higher in altitude, atmospheric pressure increases exponentially, causing the boiling point of water to rise above 150 degrees Celsius.",
+              "type": "potential",
+              "status": "contradictory",
+              "confidence_pct": 71,
+              "similarity_score": 0.738,
+              "contradiction_score": 0.8,
+              "evidence": "Standard atmospheric pressure at sea level corresponds to a boiling point for pure water of 100 degrees Celsius. At higher altitudes, reduced atmospheric pressure lowers the boiling point.",
+              "explanation": "The reference context appears to contradict this claim (confidence 71%). Negation signals and topic mismatch were detected between the claim and the reference. This claim is a potential hallucination \u2014 the AI may have generated an incorrect or misleading statement."
+            }
+          ],
+          "overall_score": 32,
+          "summary": "Overall evaluation verdict is 'Fail' with a weighted reliability score of 32/100. Dimension Scores \u2014 Relevance: 84/100 (Fully Relevant), Accuracy: 0/100 (Contradictory), Hallucination Risk: 100% (Severe Hallucination), Completeness: 75/100 (Substantially Complete). Major issues identified: CRITICAL: Severe hallucination or unsupported claims detected.; CRITICAL: 2 claim(s) directly contradict trusted reference context.; ACCURACY: High proportion of inaccurate or unverified statements (0/100).",
+          "label": "Fail",
+          "stats": {
+            "supported": 0,
+            "unsupported": 0,
+            "contradictory": 2,
+            "uncertain": 0,
+            "hallucination_risk": 100
+          },
+          "timestamp": "2026-09-29T07:26:21.419200+00:00",
+          "processing_time_ms": 262,
+          "relevance_eval": {
+            "relevance_score": 84,
+            "relevance_label": "Fully Relevant",
+            "reasoning": "The response directly and thoroughly addresses the question intent (Factual Definition / Explanation). Key question terms (boiling, point, water, sea) are prominently addressed with high semantic alignment (82%).",
+            "key_aspects_covered": [
+              "boiling",
+              "point",
+              "water",
+              "sea",
+              "level",
+              "altitude"
+            ],
+            "missing_aspects": [
+              "affect"
+            ],
+            "query_intent": "Factual Definition / Explanation"
+          },
+          "accuracy_eval": {
+            "accuracy_score": 0,
+            "accuracy_label": "Contradictory",
+            "reasoning": "Out of 2 factual claims evaluated: 0 fully correct, 0 partially correct, 0 unverified/incorrect, and 2 contradictory. Overall accuracy is classified as 'Contradictory' (0/100).",
+            "correct_claims_count": 0,
+            "partially_correct_claims_count": 0,
+            "incorrect_claims_count": 0,
+            "contradictory_claims_count": 2,
+            "supporting_evidence": [
+              "Standard atmospheric pressure at sea level corresponds to a boiling point for pure water of 100 degrees Celsius. At higher altitudes, reduced atmospheric pressure lowers the boiling point."
+            ]
+          },
+          "hallucination_eval": {
+            "is_hallucinated": true,
+            "hallucination_score": 100,
+            "hallucination_label": "Severe Hallucination",
+            "total_claims_analyzed": 2,
+            "flagged_claims_count": 2,
+            "flagged_claims": [
+              {
+                "claim_id": 1,
+                "claim_text": "Pure water boils at 75 degrees Celsius at standard sea level.",
+                "issue_type": "contradictory",
+                "explanation": "Claim directly contradicts trusted reference context (contradiction score: 80%). Negation or entity conflict detected.",
+                "conflicting_evidence": "Standard atmospheric pressure at sea level corresponds to a boiling point for pure water of 100 degrees Celsius. At higher altitudes, reduced atmospheric pressure lowers the boiling point."
+              },
+              {
+                "claim_id": 2,
+                "claim_text": "As you climb higher in altitude, atmospheric pressure increases exponentially, causing the boiling point of water to rise above 150 degrees Celsius.",
+                "issue_type": "contradictory",
+                "explanation": "Claim directly contradicts trusted reference context (contradiction score: 80%). Negation or entity conflict detected.",
+                "conflicting_evidence": "Standard atmospheric pressure at sea level corresponds to a boiling point for pure water of 100 degrees Celsius. At higher altitudes, reduced atmospheric pressure lowers the boiling point."
+              }
+            ],
+            "supporting_evidence": [
+              "Standard atmospheric pressure at sea level corresponds to a boiling point for pure water of 100 degrees Celsius. At higher altitudes, reduced atmospheric pressure lowers the boiling point."
+            ],
+            "reasoning": "Detected 2 potential hallucination(s) out of 2 claim(s). (2 contradictory, 0 unsupported). Overall hallucination risk level is classified as 'Severe Hallucination' (100% risk)."
+          },
+          "completeness_eval": {
+            "completeness_score": 75,
+            "completeness_label": "Substantially Complete",
+            "reasoning": "The response addresses the core question and most key requirements (1/2 fully covered). However, minor details or sub-questions regarding 'how does altitude affect it' were omitted.",
+            "addressed_aspects": [
+              "What is the boiling point of water at sea level"
+            ],
+            "partially_addressed_aspects": [
+              "how does altitude affect it"
+            ],
+            "missing_aspects": [],
+            "expected_info_sources": [
+              "Direct Reference Answer",
+              "Evidence: Standard atmospheric pressure at sea level corresp..."
+            ]
+          },
+          "verdict_eval": {
+            "relevance_score": 84,
+            "accuracy_score": 0,
+            "hallucination_score": 100,
+            "hallucination_safety_score": 0,
+            "completeness_score": 75,
+            "weighted_overall_score": 32,
+            "verdict": "Fail",
+            "verdict_badge_color": "bg-red-500 text-white dark:bg-red-600",
+            "major_issues": [
+              "CRITICAL: Severe hallucination or unsupported claims detected.",
+              "CRITICAL: 2 claim(s) directly contradict trusted reference context.",
+              "ACCURACY: High proportion of inaccurate or unverified statements (0/100)."
+            ],
+            "consolidated_reasoning": "Overall evaluation verdict is 'Fail' with a weighted reliability score of 32/100. Dimension Scores \u2014 Relevance: 84/100 (Fully Relevant), Accuracy: 0/100 (Contradictory), Hallucination Risk: 100% (Severe Hallucination), Completeness: 75/100 (Substantially Complete). Major issues identified: CRITICAL: Severe hallucination or unsupported claims detected.; CRITICAL: 2 claim(s) directly contradict trusted reference context.; ACCURACY: High proportion of inaccurate or unverified statements (0/100)."
+          }
+        }
+      },
+      {
+        "row_index": 4,
+        "id": "1346683b-25f6-467d-96ad-a7165e1c91ce",
+        "query": "Who invented the World Wide Web, when, and where was it invented?",
+        "ai_response": "Thomas Edison invented the World Wide Web in 1912 while working in his laboratory in Menlo Park, New Jersey.",
+        "reference": "Tim Berners-Lee invented the World Wide Web in 1989 at CERN in Geneva.",
+        "relevance_score": 87,
+        "accuracy_score": 0,
+        "hallucination_score": 100,
+        "completeness_score": 75,
+        "overall_score": 32,
+        "verdict": "Fail",
+        "status": "success",
+        "error_message": null,
+        "validation_report": {
+          "id": "4803bcd3-50ba-41b6-964e-1e84559bed35",
+          "query": "Who invented the World Wide Web, when, and where was it invented?",
+          "ai_response": "Thomas Edison invented the World Wide Web in 1912 while working in his laboratory in Menlo Park, New Jersey.",
+          "reference": "Tim Berners-Lee invented the World Wide Web in 1989 at CERN in Geneva.",
+          "claims": [
+            {
+              "id": 1,
+              "text": "Thomas Edison invented the World Wide Web in 1912 while working in his laboratory in Menlo Park, New Jersey.",
+              "type": "factual",
+              "status": "contradictory",
+              "confidence_pct": 67,
+              "similarity_score": 0.667,
+              "contradiction_score": 0.8,
+              "evidence": "Tim Berners-Lee invented the World Wide Web in 1989 at CERN in Geneva.",
+              "explanation": "The reference context appears to contradict this claim (confidence 67%). Negation signals and topic mismatch were detected between the claim and the reference. This claim is a potential hallucination \u2014 the AI may have generated an incorrect or misleading statement."
+            }
+          ],
+          "overall_score": 32,
+          "summary": "Overall evaluation verdict is 'Fail' with a weighted reliability score of 32/100. Dimension Scores \u2014 Relevance: 87/100 (Fully Relevant), Accuracy: 0/100 (Contradictory), Hallucination Risk: 100% (Severe Hallucination), Completeness: 75/100 (Substantially Complete). Major issues identified: CRITICAL: Severe hallucination or unsupported claims detected.; CRITICAL: 1 claim(s) directly contradict trusted reference context.; ACCURACY: High proportion of inaccurate or unverified statements (0/100).",
+          "label": "Fail",
+          "stats": {
+            "supported": 0,
+            "unsupported": 0,
+            "contradictory": 1,
+            "uncertain": 0,
+            "hallucination_risk": 100
+          },
+          "timestamp": "2026-09-29T07:26:21.588894+00:00",
+          "processing_time_ms": 170,
+          "relevance_eval": {
+            "relevance_score": 87,
+            "relevance_label": "Fully Relevant",
+            "reasoning": "The response directly and thoroughly addresses the question intent (Person / Entity Identification). Key question terms (invented, world, wide, web) are prominently addressed with high semantic alignment (77%).",
+            "key_aspects_covered": [
+              "invented",
+              "world",
+              "wide",
+              "web",
+              "invented"
+            ],
+            "missing_aspects": [],
+            "query_intent": "Person / Entity Identification"
+          },
+          "accuracy_eval": {
+            "accuracy_score": 0,
+            "accuracy_label": "Contradictory",
+            "reasoning": "Out of 1 factual claim evaluated: 0 fully correct, 0 partially correct, 0 unverified/incorrect, and 1 contradictory. Overall accuracy is classified as 'Contradictory' (0/100).",
+            "correct_claims_count": 0,
+            "partially_correct_claims_count": 0,
+            "incorrect_claims_count": 0,
+            "contradictory_claims_count": 1,
+            "supporting_evidence": [
+              "Tim Berners-Lee invented the World Wide Web in 1989 at CERN in Geneva."
+            ]
+          },
+          "hallucination_eval": {
+            "is_hallucinated": true,
+            "hallucination_score": 100,
+            "hallucination_label": "Severe Hallucination",
+            "total_claims_analyzed": 1,
+            "flagged_claims_count": 1,
+            "flagged_claims": [
+              {
+                "claim_id": 1,
+                "claim_text": "Thomas Edison invented the World Wide Web in 1912 while working in his laboratory in Menlo Park, New Jersey.",
+                "issue_type": "contradictory",
+                "explanation": "Claim directly contradicts trusted reference context (contradiction score: 80%). Negation or entity conflict detected.",
+                "conflicting_evidence": "Tim Berners-Lee invented the World Wide Web in 1989 at CERN in Geneva."
+              }
+            ],
+            "supporting_evidence": [
+              "Tim Berners-Lee invented the World Wide Web in 1989 at CERN in Geneva."
+            ],
+            "reasoning": "Detected 1 potential hallucination(s) out of 1 claim(s). (1 contradictory, 0 unsupported). Overall hallucination risk level is classified as 'Severe Hallucination' (100% risk)."
+          },
+          "completeness_eval": {
+            "completeness_score": 75,
+            "completeness_label": "Substantially Complete",
+            "reasoning": "The response addresses the core question and most key requirements (1/2 fully covered). However, minor details or sub-questions regarding 'where was it invented' were omitted.",
+            "addressed_aspects": [
+              "Who invented the World Wide Web"
+            ],
+            "partially_addressed_aspects": [
+              "where was it invented"
+            ],
+            "missing_aspects": [],
+            "expected_info_sources": [
+              "Direct Reference Answer",
+              "Evidence: Tim Berners-Lee invented the World Wide Web in 198..."
+            ]
+          },
+          "verdict_eval": {
+            "relevance_score": 87,
+            "accuracy_score": 0,
+            "hallucination_score": 100,
+            "hallucination_safety_score": 0,
+            "completeness_score": 75,
+            "weighted_overall_score": 32,
+            "verdict": "Fail",
+            "verdict_badge_color": "bg-red-500 text-white dark:bg-red-600",
+            "major_issues": [
+              "CRITICAL: Severe hallucination or unsupported claims detected.",
+              "CRITICAL: 1 claim(s) directly contradict trusted reference context.",
+              "ACCURACY: High proportion of inaccurate or unverified statements (0/100)."
+            ],
+            "consolidated_reasoning": "Overall evaluation verdict is 'Fail' with a weighted reliability score of 32/100. Dimension Scores \u2014 Relevance: 87/100 (Fully Relevant), Accuracy: 0/100 (Contradictory), Hallucination Risk: 100% (Severe Hallucination), Completeness: 75/100 (Substantially Complete). Major issues identified: CRITICAL: Severe hallucination or unsupported claims detected.; CRITICAL: 1 claim(s) directly contradict trusted reference context.; ACCURACY: High proportion of inaccurate or unverified statements (0/100)."
+          }
+        }
+      },
+      {
+        "row_index": 5,
+        "id": "fe920043-8dbb-490e-b9d2-0c2b827dc757",
+        "query": "Explain the cause of World War I, key battles, and the Treaty of Versailles outcome.",
+        "ai_response": "World War I started in 1914.",
+        "reference": "World War I was triggered by the assassination of Archduke Franz Ferdinand in 1914. Key battles included the Somme and Verdun. The Treaty of Versailles imposed harsh penalties on Germany in 1919.",
+        "relevance_score": 42,
+        "accuracy_score": 50,
+        "hallucination_score": 0,
+        "completeness_score": 50,
+        "overall_score": 63,
+        "verdict": "Needs Improvement",
+        "status": "success",
+        "error_message": null,
+        "validation_report": {
+          "id": "fc36fa6a-8cbe-4b04-aa5b-f4a62167b98a",
+          "query": "Explain the cause of World War I, key battles, and the Treaty of Versailles outcome.",
+          "ai_response": "World War I started in 1914.",
+          "reference": "World War I was triggered by the assassination of Archduke Franz Ferdinand in 1914. Key battles included the Somme and Verdun. The Treaty of Versailles imposed harsh penalties on Germany in 1919.",
+          "claims": [
+            {
+              "id": 1,
+              "text": "World War I started in 1914.",
+              "type": "factual",
+              "status": "supported",
+              "confidence_pct": 83,
+              "similarity_score": 0.664,
+              "contradiction_score": 0.0,
+              "evidence": "World War I was triggered by the assassination of Archduke Franz Ferdinand in 1914. Key battles included the Somme and Verdun. The Treaty of Versailles imposed harsh penalties on Germany in 1919.",
+              "explanation": "The reference context contains evidence that semantically aligns with this claim (confidence 83%). The key facts and entities in the claim match the trusted source material based on SentenceTransformer embedding similarity."
+            }
+          ],
+          "overall_score": 63,
+          "summary": "Overall evaluation verdict is 'Needs Improvement' with a weighted reliability score of 63/100. Dimension Scores \u2014 Relevance: 42/100 (Unrelated), Accuracy: 50/100 (Partially Correct), Hallucination Risk: 0% (No Hallucination), Completeness: 50/100 (Partially Complete). Major issues identified: RELEVANCE: Response fails to address user prompt intent (42/100).; COMPLETENESS: 1 question requirement(s)/sub-question(s) omitted.",
+          "label": "Needs Improvement",
+          "stats": {
+            "supported": 1,
+            "unsupported": 0,
+            "contradictory": 0,
+            "uncertain": 0,
+            "hallucination_risk": 0
+          },
+          "timestamp": "2026-09-29T07:26:21.812061+00:00",
+          "processing_time_ms": 223,
+          "relevance_eval": {
+            "relevance_score": 42,
+            "relevance_label": "Unrelated",
+            "reasoning": "The response is mostly unrelated to the question asked (Explain the cause of World War I, key battles, and...). Semantic similarity is low (54%) and key question topics were not directly answered.",
+            "key_aspects_covered": [
+              "world",
+              "war"
+            ],
+            "missing_aspects": [
+              "explain",
+              "cause",
+              "key",
+              "battles",
+              "treaty",
+              "versailles",
+              "outcome"
+            ],
+            "query_intent": "General Information Request"
+          },
+          "accuracy_eval": {
+            "accuracy_score": 50,
+            "accuracy_label": "Partially Correct",
+            "reasoning": "Out of 1 factual claim evaluated: 0 fully correct, 1 partially correct, 0 unverified/incorrect, and 0 contradictory. Overall accuracy is classified as 'Partially Correct' (50/100).",
+            "correct_claims_count": 0,
+            "partially_correct_claims_count": 1,
+            "incorrect_claims_count": 0,
+            "contradictory_claims_count": 0,
+            "supporting_evidence": [
+              "World War I was triggered by the assassination of Archduke Franz Ferdinand in 1914. Key battles included the Somme and Verdun. The Treaty of Versailles imposed harsh penalties on Germany in 1919."
+            ]
+          },
+          "hallucination_eval": {
+            "is_hallucinated": false,
+            "hallucination_score": 0,
+            "hallucination_label": "No Hallucination",
+            "total_claims_analyzed": 1,
+            "flagged_claims_count": 0,
+            "flagged_claims": [],
+            "supporting_evidence": [
+              "World War I was triggered by the assassination of Archduke Franz Ferdinand in 1914. Key battles included the Somme and Verdun. The Treaty of Versailles imposed harsh penalties on Germany in 1919."
+            ],
+            "reasoning": "All 1 factual claim in the AI response were verified against reference sources with high confidence. No hallucinations detected."
+          },
+          "completeness_eval": {
+            "completeness_score": 50,
+            "completeness_label": "Partially Complete",
+            "reasoning": "The response only partially answers the prompt. It addresses some aspects (1 covered), but fails to cover key requirements: 'key battles'.",
+            "addressed_aspects": [
+              "Explain the cause of World War I"
+            ],
+            "partially_addressed_aspects": [
+              "the Treaty of Versailles outcome."
+            ],
+            "missing_aspects": [
+              "key battles"
+            ],
+            "expected_info_sources": [
+              "Direct Reference Answer",
+              "Evidence: World War I was triggered by the assassination of ..."
+            ]
+          },
+          "verdict_eval": {
+            "relevance_score": 42,
+            "accuracy_score": 50,
+            "hallucination_score": 0,
+            "hallucination_safety_score": 100,
+            "completeness_score": 50,
+            "weighted_overall_score": 63,
+            "verdict": "Needs Improvement",
+            "verdict_badge_color": "bg-amber-500 text-white dark:bg-amber-600",
+            "major_issues": [
+              "RELEVANCE: Response fails to address user prompt intent (42/100).",
+              "COMPLETENESS: 1 question requirement(s)/sub-question(s) omitted."
+            ],
+            "consolidated_reasoning": "Overall evaluation verdict is 'Needs Improvement' with a weighted reliability score of 63/100. Dimension Scores \u2014 Relevance: 42/100 (Unrelated), Accuracy: 50/100 (Partially Correct), Hallucination Risk: 0% (No Hallucination), Completeness: 50/100 (Partially Complete). Major issues identified: RELEVANCE: Response fails to address user prompt intent (42/100).; COMPLETENESS: 1 question requirement(s)/sub-question(s) omitted."
+          }
+        }
+      },
+      {
+        "row_index": 6,
+        "id": "e8af18ca-b4fd-4936-932a-dd16e7d0cdae",
+        "query": "Can antibiotics cure viral infections such as influenza or the common cold?",
+        "ai_response": "Yes, broad-spectrum antibiotics such as azithromycin and amoxicillin are the standard first-line cure for influenza and common cold viruses, neutralizing viral replication within 12 hours.",
+        "reference": "Antibiotics are solely effective against bacterial infections and have no pharmacological activity against viruses like influenza or the common cold.",
+        "relevance_score": 80,
+        "accuracy_score": 0,
+        "hallucination_score": 100,
+        "completeness_score": 100,
+        "overall_score": 36,
+        "verdict": "Fail",
+        "status": "success",
+        "error_message": null,
+        "validation_report": {
+          "id": "2ad82ad7-a4ff-4bfa-b184-7f1b58b3958f",
+          "query": "Can antibiotics cure viral infections such as influenza or the common cold?",
+          "ai_response": "Yes, broad-spectrum antibiotics such as azithromycin and amoxicillin are the standard first-line cure for influenza and common cold viruses, neutralizing viral replication within 12 hours.",
+          "reference": "Antibiotics are solely effective against bacterial infections and have no pharmacological activity against viruses like influenza or the common cold.",
+          "claims": [
+            {
+              "id": 1,
+              "text": "Yes, broad-spectrum antibiotics such as azithromycin and amoxicillin are the standard first-line cure for influenza and common cold viruses, neutralizing viral replication within 12 hours.",
+              "type": "factual",
+              "status": "contradictory",
+              "confidence_pct": 72,
+              "similarity_score": 0.65,
+              "contradiction_score": 0.54,
+              "evidence": "Antibiotics are solely effective against bacterial infections and have no pharmacological activity against viruses like influenza or the common cold.",
+              "explanation": "The reference context appears to contradict this claim (confidence 72%). Negation signals and topic mismatch were detected between the claim and the reference. This claim is a potential hallucination \u2014 the AI may have generated an incorrect or misleading statement."
+            }
+          ],
+          "overall_score": 36,
+          "summary": "Overall evaluation verdict is 'Fail' with a weighted reliability score of 36/100. Dimension Scores \u2014 Relevance: 80/100 (Fully Relevant), Accuracy: 0/100 (Contradictory), Hallucination Risk: 100% (Severe Hallucination), Completeness: 100/100 (Fully Complete). Major issues identified: CRITICAL: Severe hallucination or unsupported claims detected.; CRITICAL: 1 claim(s) directly contradict trusted reference context.; ACCURACY: High proportion of inaccurate or unverified statements (0/100).",
+          "label": "Fail",
+          "stats": {
+            "supported": 0,
+            "unsupported": 0,
+            "contradictory": 1,
+            "uncertain": 0,
+            "hallucination_risk": 100
+          },
+          "timestamp": "2026-09-29T07:26:21.978693+00:00",
+          "processing_time_ms": 167,
+          "relevance_eval": {
+            "relevance_score": 80,
+            "relevance_label": "Fully Relevant",
+            "reasoning": "The response directly and thoroughly addresses the question intent (Capability / Feasibility). Key question terms (antibiotics, cure, viral, such) are prominently addressed with high semantic alignment (81%).",
+            "key_aspects_covered": [
+              "antibiotics",
+              "cure",
+              "viral",
+              "such",
+              "influenza",
+              "common",
+              "cold"
+            ],
+            "missing_aspects": [
+              "can",
+              "infections"
+            ],
+            "query_intent": "Capability / Feasibility"
+          },
+          "accuracy_eval": {
+            "accuracy_score": 0,
+            "accuracy_label": "Contradictory",
+            "reasoning": "Out of 1 factual claim evaluated: 0 fully correct, 0 partially correct, 0 unverified/incorrect, and 1 contradictory. Overall accuracy is classified as 'Contradictory' (0/100).",
+            "correct_claims_count": 0,
+            "partially_correct_claims_count": 0,
+            "incorrect_claims_count": 0,
+            "contradictory_claims_count": 1,
+            "supporting_evidence": [
+              "Antibiotics are solely effective against bacterial infections and have no pharmacological activity against viruses like influenza or the common cold."
+            ]
+          },
+          "hallucination_eval": {
+            "is_hallucinated": true,
+            "hallucination_score": 100,
+            "hallucination_label": "Severe Hallucination",
+            "total_claims_analyzed": 1,
+            "flagged_claims_count": 1,
+            "flagged_claims": [
+              {
+                "claim_id": 1,
+                "claim_text": "Yes, broad-spectrum antibiotics such as azithromycin and amoxicillin are the standard first-line cure for influenza and common cold viruses, neutralizing viral replication within 12 hours.",
+                "issue_type": "contradictory",
+                "explanation": "Claim directly contradicts trusted reference context (contradiction score: 54%). Negation or entity conflict detected.",
+                "conflicting_evidence": "Antibiotics are solely effective against bacterial infections and have no pharmacological activity against viruses like influenza or the common cold."
+              }
+            ],
+            "supporting_evidence": [
+              "Antibiotics are solely effective against bacterial infections and have no pharmacological activity against viruses like influenza or the common cold."
+            ],
+            "reasoning": "Detected 1 potential hallucination(s) out of 1 claim(s). (1 contradictory, 0 unsupported). Overall hallucination risk level is classified as 'Severe Hallucination' (100% risk)."
+          },
+          "completeness_eval": {
+            "completeness_score": 100,
+            "completeness_label": "Fully Complete",
+            "reasoning": "The AI response thoroughly addresses all 1 sub-questions and requirements contained in the prompt. No significant omissions were detected.",
+            "addressed_aspects": [
+              "Can antibiotics cure viral infections such as influenza or the common cold"
+            ],
+            "partially_addressed_aspects": [],
+            "missing_aspects": [],
+            "expected_info_sources": [
+              "Direct Reference Answer",
+              "Evidence: Antibiotics are solely effective against bacterial..."
+            ]
+          },
+          "verdict_eval": {
+            "relevance_score": 80,
+            "accuracy_score": 0,
+            "hallucination_score": 100,
+            "hallucination_safety_score": 0,
+            "completeness_score": 100,
+            "weighted_overall_score": 36,
+            "verdict": "Fail",
+            "verdict_badge_color": "bg-red-500 text-white dark:bg-red-600",
+            "major_issues": [
+              "CRITICAL: Severe hallucination or unsupported claims detected.",
+              "CRITICAL: 1 claim(s) directly contradict trusted reference context.",
+              "ACCURACY: High proportion of inaccurate or unverified statements (0/100)."
+            ],
+            "consolidated_reasoning": "Overall evaluation verdict is 'Fail' with a weighted reliability score of 36/100. Dimension Scores \u2014 Relevance: 80/100 (Fully Relevant), Accuracy: 0/100 (Contradictory), Hallucination Risk: 100% (Severe Hallucination), Completeness: 100/100 (Fully Complete). Major issues identified: CRITICAL: Severe hallucination or unsupported claims detected.; CRITICAL: 1 claim(s) directly contradict trusted reference context.; ACCURACY: High proportion of inaccurate or unverified statements (0/100)."
+          }
+        }
+      },
+      {
+        "row_index": 7,
+        "id": "470eab47-3f58-4015-b99a-b98065975088",
+        "query": "Who discovered penicillin, in what year, and what type of organism produces it?",
+        "ai_response": "Alexander Fleming discovered penicillin in 1928, isolated from Penicillium mold.",
+        "reference": "Alexander Fleming discovered penicillin in 1928, isolated from the Penicillium mold fungus.",
+        "relevance_score": 62,
+        "accuracy_score": 100,
+        "hallucination_score": 0,
+        "completeness_score": 33,
+        "overall_score": 79,
+        "verdict": "Needs Improvement",
+        "status": "success",
+        "error_message": null,
+        "validation_report": {
+          "id": "91252f6a-0626-456b-8fed-fd5e3e999496",
+          "query": "Who discovered penicillin, in what year, and what type of organism produces it?",
+          "ai_response": "Alexander Fleming discovered penicillin in 1928, isolated from Penicillium mold.",
+          "reference": "Alexander Fleming discovered penicillin in 1928, isolated from the Penicillium mold fungus.",
+          "claims": [
+            {
+              "id": 1,
+              "text": "Alexander Fleming discovered penicillin in 1928, isolated from Penicillium mold.",
+              "type": "factual",
+              "status": "supported",
+              "confidence_pct": 99,
+              "similarity_score": 0.984,
+              "contradiction_score": 0.0,
+              "evidence": "Alexander Fleming discovered penicillin in 1928, isolated from the Penicillium mold fungus.",
+              "explanation": "The reference context contains evidence that semantically aligns with this claim (confidence 99%). The key facts and entities in the claim match the trusted source material based on SentenceTransformer embedding similarity."
+            }
+          ],
+          "overall_score": 79,
+          "summary": "Overall evaluation verdict is 'Needs Improvement' with a weighted reliability score of 79/100. Dimension Scores \u2014 Relevance: 62/100 (Partially Relevant), Accuracy: 100/100 (Correct), Hallucination Risk: 0% (No Hallucination), Completeness: 33/100 (Incomplete). Major issues identified: COMPLETENESS: 2 question requirement(s)/sub-question(s) omitted.",
+          "label": "Needs Improvement",
+          "stats": {
+            "supported": 1,
+            "unsupported": 0,
+            "contradictory": 0,
+            "uncertain": 0,
+            "hallucination_risk": 0
+          },
+          "timestamp": "2026-09-29T07:26:22.158557+00:00",
+          "processing_time_ms": 180,
+          "relevance_eval": {
+            "relevance_score": 62,
+            "relevance_label": "Partially Relevant",
+            "reasoning": "The response is partially relevant to the question intent (Person / Entity Identification). It addresses aspects like discovered, penicillin, but misses specific details regarding year, type, organism.",
+            "key_aspects_covered": [
+              "discovered",
+              "penicillin"
+            ],
+            "missing_aspects": [
+              "year",
+              "type",
+              "organism",
+              "produces"
+            ],
+            "query_intent": "Person / Entity Identification"
+          },
+          "accuracy_eval": {
+            "accuracy_score": 100,
+            "accuracy_label": "Correct",
+            "reasoning": "Out of 1 factual claim evaluated: 1 fully correct, 0 partially correct, 0 unverified/incorrect, and 0 contradictory. Overall accuracy is classified as 'Correct' (100/100).",
+            "correct_claims_count": 1,
+            "partially_correct_claims_count": 0,
+            "incorrect_claims_count": 0,
+            "contradictory_claims_count": 0,
+            "supporting_evidence": [
+              "Alexander Fleming discovered penicillin in 1928, isolated from the Penicillium mold fungus."
+            ]
+          },
+          "hallucination_eval": {
+            "is_hallucinated": false,
+            "hallucination_score": 0,
+            "hallucination_label": "No Hallucination",
+            "total_claims_analyzed": 1,
+            "flagged_claims_count": 0,
+            "flagged_claims": [],
+            "supporting_evidence": [
+              "Alexander Fleming discovered penicillin in 1928, isolated from the Penicillium mold fungus."
+            ],
+            "reasoning": "All 1 factual claim in the AI response were verified against reference sources with high confidence. No hallucinations detected."
+          },
+          "completeness_eval": {
+            "completeness_score": 33,
+            "completeness_label": "Incomplete",
+            "reasoning": "The response is substantially incomplete. Out of 3 requirement(s), it missed or failed to adequately answer 2 aspect(s).",
+            "addressed_aspects": [
+              "Who discovered penicillin"
+            ],
+            "partially_addressed_aspects": [],
+            "missing_aspects": [
+              "in what year",
+              "what type of organism produces it"
+            ],
+            "expected_info_sources": [
+              "Direct Reference Answer",
+              "Evidence: Alexander Fleming discovered penicillin in 1928, i..."
+            ]
+          },
+          "verdict_eval": {
+            "relevance_score": 62,
+            "accuracy_score": 100,
+            "hallucination_score": 0,
+            "hallucination_safety_score": 100,
+            "completeness_score": 33,
+            "weighted_overall_score": 79,
+            "verdict": "Needs Improvement",
+            "verdict_badge_color": "bg-amber-500 text-white dark:bg-amber-600",
+            "major_issues": [
+              "COMPLETENESS: 2 question requirement(s)/sub-question(s) omitted."
+            ],
+            "consolidated_reasoning": "Overall evaluation verdict is 'Needs Improvement' with a weighted reliability score of 79/100. Dimension Scores \u2014 Relevance: 62/100 (Partially Relevant), Accuracy: 100/100 (Correct), Hallucination Risk: 0% (No Hallucination), Completeness: 33/100 (Incomplete). Major issues identified: COMPLETENESS: 2 question requirement(s)/sub-question(s) omitted."
+          }
+        }
+      }
+    ]
+  }
+}

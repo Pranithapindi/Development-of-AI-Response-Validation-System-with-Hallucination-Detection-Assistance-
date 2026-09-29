@@ -9,19 +9,24 @@ import Analytics from './pages/Analytics.jsx';
 import Architecture from './pages/Architecture.jsx';
 import CodeWalkthrough from './pages/CodeWalkthrough.jsx';
 import About from './pages/About.jsx';
+import EvaluationDashboard from './pages/EvaluationDashboard.jsx';
+import TechnicalDocumentation from './pages/TechnicalDocumentation.jsx';
 import { SEED_HISTORY } from './data/demoData.js';
 
-const STORAGE_KEY = 'ai_validator_history';
+const STORAGE_KEY       = 'ai_validator_history';
+const BATCH_STORAGE_KEY = 'ai_validator_batch_history';
 
 const PAGE_TITLES = {
-  dashboard:    { title: 'Dashboard',             subtitle: 'Overview of validation activity and analytics' },
-  validate:     { title: 'Validate Response',      subtitle: 'Analyze AI responses for hallucinations and unsupported claims' },
-  batch:        { title: 'Batch Evaluation',       subtitle: 'Automated CSV batch validation across all Judge Agents' },
-  history:      { title: 'Validation History',     subtitle: 'Browse and manage past validation sessions' },
-  analytics:    { title: 'Analytics',              subtitle: 'Visualize trends, distributions, and system metrics' },
-  architecture: { title: 'System Architecture',    subtitle: 'End-to-end pipeline diagram and module details' },
-  walkthrough:  { title: 'Code Walkthrough',       subtitle: 'Step-by-step explanation of the validation algorithm' },
-  about:        { title: 'About the Project',      subtitle: 'Research context, objectives, and technology stack' },
+  dashboard:    { title: 'Dashboard',                  subtitle: 'Overview of validation activity and analytics' },
+  validate:     { title: 'Validate Response',           subtitle: 'Analyze AI responses for hallucinations and unsupported claims' },
+  batch:        { title: 'Batch Evaluation',            subtitle: 'Automated CSV batch validation across all Judge Agents' },
+  evaldash:     { title: 'Evaluation Dashboard',        subtitle: 'M4.1 — Scoring trends, pass/fail rates, and drill-down analytics' },
+  documentation:{ title: 'Technical Docs & Report',     subtitle: 'M4.4 — Architecture, scoring rubrics, 2-system AI demonstration, and project report' },
+  history:      { title: 'Validation History',          subtitle: 'Browse and manage past validation sessions' },
+  analytics:    { title: 'Analytics',                   subtitle: 'Visualize trends, distributions, and system metrics' },
+  architecture: { title: 'System Architecture',         subtitle: 'End-to-end pipeline diagram and module details' },
+  walkthrough:  { title: 'Code Walkthrough',            subtitle: 'Step-by-step explanation of the validation algorithm' },
+  about:        { title: 'About the Project',           subtitle: 'Research context, objectives, and technology stack' },
 };
 
 function loadHistory() {
@@ -32,18 +37,33 @@ function loadHistory() {
   return SEED_HISTORY;
 }
 
+function loadBatchHistory() {
+  try {
+    const stored = localStorage.getItem(BATCH_STORAGE_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch {}
+  return [];
+}
+
 function saveHistory(history) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
   } catch {}
 }
 
+function saveBatchHistory(batchHistory) {
+  try {
+    localStorage.setItem(BATCH_STORAGE_KEY, JSON.stringify(batchHistory));
+  } catch {}
+}
+
 export default function App() {
-  const [page,      setPage]     = useState('dashboard');
-  const [darkMode,  setDarkMode] = useState(() => {
+  const [page,         setPage]         = useState('dashboard');
+  const [darkMode,     setDarkMode]     = useState(() => {
     try { return localStorage.getItem('ai_validator_dark') === 'true'; } catch { return false; }
   });
-  const [history, setHistory]   = useState(loadHistory);
+  const [history,      setHistory]      = useState(loadHistory);
+  const [batchHistory, setBatchHistory] = useState(loadBatchHistory);
 
   // Apply dark mode class to <html>
   useEffect(() => {
@@ -60,6 +80,11 @@ export default function App() {
     saveHistory(history);
   }, [history]);
 
+  // Save batch history to localStorage
+  useEffect(() => {
+    saveBatchHistory(batchHistory);
+  }, [batchHistory]);
+
   const handleSaveHistory = useCallback((result) => {
     const record = {
       id:         `h${Date.now()}`,
@@ -74,6 +99,10 @@ export default function App() {
       claims:     result.claims,
     };
     setHistory(prev => [...prev, record]);
+  }, []);
+
+  const handleSaveBatch = useCallback((batchResult) => {
+    setBatchHistory(prev => [...prev, batchResult]);
   }, []);
 
   const handleDeleteHistory = useCallback((idOrTimestamp) => {
@@ -103,7 +132,9 @@ export default function App() {
         <main className="flex-1 p-8">
           {page === 'dashboard'    && <Dashboard onNavigate={setPage} history={history} />}
           {page === 'validate'     && <Validate onSaveHistory={handleSaveHistory} />}
-          {page === 'batch'        && <BatchEvaluation />}
+          {page === 'batch'        && <BatchEvaluation onSaveBatch={handleSaveBatch} />}
+          {page === 'evaldash'     && <EvaluationDashboard batchHistory={batchHistory} />}
+          {page === 'documentation'&& <TechnicalDocumentation />}
           {page === 'history'      && (
             <History
               history={history}
