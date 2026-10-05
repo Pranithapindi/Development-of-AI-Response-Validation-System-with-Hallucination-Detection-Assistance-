@@ -11,6 +11,9 @@ import CodeWalkthrough from './pages/CodeWalkthrough.jsx';
 import About from './pages/About.jsx';
 import EvaluationDashboard from './pages/EvaluationDashboard.jsx';
 import TechnicalDocumentation from './pages/TechnicalDocumentation.jsx';
+import LandingPage from './pages/LandingPage.jsx';
+import Auth from './pages/Auth.jsx';
+import AccountSettings from './pages/AccountSettings.jsx';
 import { SEED_HISTORY } from './data/demoData.js';
 
 const STORAGE_KEY       = 'ai_validator_history';
@@ -20,13 +23,15 @@ const PAGE_TITLES = {
   dashboard:    { title: 'Dashboard',                  subtitle: 'Overview of validation activity and analytics' },
   validate:     { title: 'Validate Response',           subtitle: 'Analyze AI responses for hallucinations and unsupported claims' },
   batch:        { title: 'Batch Evaluation',            subtitle: 'Automated CSV batch validation across all Judge Agents' },
-  evaldash:     { title: 'Evaluation Dashboard',        subtitle: 'M4.1 — Scoring trends, pass/fail rates, and drill-down analytics' },
-  documentation:{ title: 'Technical Docs & Report',     subtitle: 'M4.4 — Architecture, scoring rubrics, 2-system AI demonstration, and project report' },
+  evaldash:     { title: 'Evaluation Dashboard',        subtitle: 'Scoring trends, pass/fail rates, and drill-down analytics' },
+  documentation:{ title: 'Technical Docs & Report',     subtitle: 'Architecture, scoring rubrics, 2-system AI demonstration, and project report' },
   history:      { title: 'Validation History',          subtitle: 'Browse and manage past validation sessions' },
   analytics:    { title: 'Analytics',                   subtitle: 'Visualize trends, distributions, and system metrics' },
   architecture: { title: 'System Architecture',         subtitle: 'End-to-end pipeline diagram and module details' },
   walkthrough:  { title: 'Code Walkthrough',            subtitle: 'Step-by-step explanation of the validation algorithm' },
   about:        { title: 'About the Project',           subtitle: 'Research context, objectives, and technology stack' },
+  account:      { title: 'Account & Settings',         subtitle: 'Researcher profile, credentials, system preferences, and security' },
+  auth:         { title: 'Authentication Portal',      subtitle: 'Manage user access and researcher sign-in' },
 };
 
 function loadHistory() {
@@ -58,6 +63,9 @@ function saveBatchHistory(batchHistory) {
 }
 
 export default function App() {
+  const [showLanding,  setShowLanding]  = useState(true);
+  const [showAuth,     setShowAuth]     = useState(false);
+  const [authMode,     setAuthMode]     = useState('login');
   const [page,         setPage]         = useState('dashboard');
   const [darkMode,     setDarkMode]     = useState(() => {
     try { return localStorage.getItem('ai_validator_dark') === 'true'; } catch { return false; }
@@ -65,7 +73,17 @@ export default function App() {
   const [history,      setHistory]      = useState(loadHistory);
   const [batchHistory, setBatchHistory] = useState(loadBatchHistory);
 
-  // Apply dark mode class to <html>
+  // Authenticated user state
+  const [currentUser,  setCurrentUser]  = useState(() => {
+    try {
+      const stored = localStorage.getItem('ai_validator_user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  // Apply dark mode class to <html> — must be declared before any conditional return
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
@@ -113,12 +131,74 @@ export default function App() {
     setHistory([]);
   }, []);
 
+  const handleOpenAuth = useCallback((mode = 'login') => {
+    setAuthMode(mode);
+    setShowAuth(true);
+  }, []);
+
+  const handleAuthSuccess = useCallback((user) => {
+    setCurrentUser(user);
+    setShowAuth(false);
+    setShowLanding(false);
+    setPage('dashboard');
+  }, []);
+
+  const handleLogout = useCallback(() => {
+    try {
+      localStorage.removeItem('ai_validator_user');
+    } catch {}
+    setCurrentUser(null);
+    setShowAuth(false);
+    setShowLanding(true);
+    setPage('dashboard');
+  }, []);
+
+  const handleUpdateUser = useCallback((updated) => {
+    setCurrentUser(updated);
+    try {
+      localStorage.setItem('ai_validator_user', JSON.stringify(updated));
+    } catch {}
+  }, []);
+
+  // Full-screen Auth Portal Gate (when user explicitly clicks Login / Register)
+  if (showAuth) {
+    return (
+      <Auth
+        initialMode={authMode}
+        onAuthSuccess={handleAuthSuccess}
+        onGoHome={() => setShowAuth(false)}
+      />
+    );
+  }
+
+  // Gate: show animated landing page first, then the main app
+  if (showLanding) {
+    return (
+      <LandingPage
+        onEnter={(targetPage = 'dashboard') => {
+          setPage(targetPage);
+          setShowLanding(false);
+        }}
+        currentUser={currentUser}
+        onOpenAuth={handleOpenAuth}
+        onLogout={handleLogout}
+      />
+    );
+  }
+
   const { title, subtitle } = PAGE_TITLES[page] || PAGE_TITLES.dashboard;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Sidebar */}
-      <Sidebar currentPage={page} onNavigate={setPage} />
+      <Sidebar
+        currentPage={page}
+        onNavigate={setPage}
+        onGoHome={() => setShowLanding(true)}
+        currentUser={currentUser}
+        onOpenAuth={handleOpenAuth}
+        onLogout={handleLogout}
+      />
 
       {/* Main content */}
       <div className="ml-64 min-h-screen flex flex-col">
@@ -127,6 +207,10 @@ export default function App() {
           subtitle={subtitle}
           darkMode={darkMode}
           onToggleDark={() => setDarkMode(d => !d)}
+          currentUser={currentUser}
+          onOpenAuth={handleOpenAuth}
+          onLogout={handleLogout}
+          onNavigate={setPage}
         />
 
         <main className="flex-1 p-8">
@@ -146,6 +230,27 @@ export default function App() {
           {page === 'architecture' && <Architecture />}
           {page === 'walkthrough'  && <CodeWalkthrough />}
           {page === 'about'        && <About />}
+          {page === 'account'      && (
+            <AccountSettings
+              currentUser={currentUser}
+              onUpdateUser={handleUpdateUser}
+              onLogout={handleLogout}
+              onOpenAuth={handleOpenAuth}
+              historyCount={history.length}
+              batchCount={batchHistory.length}
+              darkMode={darkMode}
+              onToggleDark={() => setDarkMode(d => !d)}
+            />
+          )}
+          {page === 'auth'         && (
+            <div className="max-w-2xl mx-auto py-6">
+              <Auth
+                initialMode={currentUser ? 'login' : 'register'}
+                onAuthSuccess={handleAuthSuccess}
+                onGoHome={() => setPage('dashboard')}
+              />
+            </div>
+          )}
         </main>
       </div>
     </div>

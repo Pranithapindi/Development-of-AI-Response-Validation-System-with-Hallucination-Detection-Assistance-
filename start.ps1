@@ -4,7 +4,7 @@ Write-Host ""
 
 # Start FastAPI backend
 Write-Host "[1/2] Starting FastAPI Backend (http://localhost:8000)..." -ForegroundColor Yellow
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$PSScriptRoot\backend'; python main.py"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$PSScriptRoot\backend'; .\.venv\Scripts\python.exe main.py"
 
 # Wait a moment for backend to init
 Start-Sleep -Seconds 3

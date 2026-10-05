@@ -76,7 +76,7 @@ export default function TechnicalDocumentation() {
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-semibold mb-3">
-              <ShieldCheck size={14} /> Milestone 4.4 — Comprehensive Technical Documentation & Project Report
+              <ShieldCheck size={14} /> Comprehensive Technical Documentation & Project Report
             </div>
             <h1 className="text-3xl font-extrabold tracking-tight">
               AI Response Validation System
@@ -564,7 +564,7 @@ export default function TechnicalDocumentation() {
               <div>
                 <h2 className="text-xl font-black">Comprehensive Project Report</h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Deliverable for Milestone 4 • AI Response Validation System with Hallucination Detection Assistance
+                  Technical Deliverable • AI Response Validation System with Hallucination Detection Assistance
                 </p>
               </div>
               <button
