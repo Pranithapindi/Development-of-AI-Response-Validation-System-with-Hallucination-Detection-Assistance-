@@ -6,7 +6,7 @@ FastAPI application entry point.
 Architecture:
   User (Browser) → React.js → Axios → FastAPI (this file)
                                               ↓
-                             SentenceTransformers + ChromaDB + LangChain
+                             TF-IDF (scikit-learn) + In-memory VectorStore
                                               ↓
                              MongoDB / SQLite → Results → PDF Export
 """
@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """
     Application lifespan handler:
-      - On startup: initialise DB, load NLP model
+      - On startup: initialise DB (TF-IDF needs no model loading)
       - On shutdown: cleanup
     """
     logger.info("=" * 60)
@@ -51,16 +51,9 @@ async def lifespan(app: FastAPI):
     app.state.db_type = db_type
     logger.info("Database: %s", db_type)
 
-    # Load SentenceTransformer model (downloads ~80MB on first run)
-    from services.nlp_validator import load_model, is_model_loaded
-    logger.info("Loading NLP model (SentenceTransformers)...")
-    model = load_model()
-    app.state.model_loaded = is_model_loaded()
-
-    if app.state.model_loaded:
-        logger.info("NLP model ready ✅")
-    else:
-        logger.warning("NLP model failed to load — validation will use fallback")
+    # TF-IDF needs no model download — ready immediately
+    app.state.model_loaded = True
+    logger.info("NLP engine: TF-IDF cosine similarity (no model download needed) ✅")
 
     logger.info("Backend ready at http://localhost:%s", os.getenv("PORT", "8000"))
     logger.info("=" * 60)
@@ -76,7 +69,7 @@ app = FastAPI(
     title="AI Response Validation System",
     description=(
         "Detect hallucinations, validate claims, and improve trust in AI-generated content. "
-        "Powered by SentenceTransformers, ChromaDB (Vector DB), LangChain (RAG), "
+        "Powered by TF-IDF similarity, in-memory vector store, "
         "and MongoDB/SQLite for storage."
     ),
     version="2.0.0",
@@ -138,10 +131,14 @@ async def root():
 # ── Run ───────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     import uvicorn
+    is_prod = bool(os.getenv("RENDER") or os.getenv("PORT"))
+    port = int(os.getenv("PORT", 8000))
+    host = os.getenv("HOST", "0.0.0.0")
     uvicorn.run(
         "main:app",
-        host=os.getenv("HOST", "0.0.0.0"),
-        port=int(os.getenv("PORT", 8000)),
-        reload=True,
+        host=host,
+        port=port,
+        reload=not is_prod,
         log_level="info",
     )
+

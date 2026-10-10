@@ -6,4 +6,3 @@ pydantic>=2.9.0
 python-multipart>=0.0.9
 pymongo>=4.8.0
 numpy>=1.26.0
-
