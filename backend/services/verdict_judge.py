@@ -86,7 +86,7 @@ def evaluate_verdict(
     # Step 3: Threshold Rules & Critical Failure Override Rules
     # Rule 1: Severe hallucination, direct contradiction, or severe irrelevance forces 'Fail'
     has_critical_failure = (
-        hall_risk >= 50 or
+        hall_risk >= 60 or
         accuracy_eval.contradictory_claims_count > 0 or
         acc_score < 30 or
         rel_score < 30
@@ -95,7 +95,7 @@ def evaluate_verdict(
     if has_critical_failure:
         verdict = "Fail"
         verdict_color = "bg-red-500 text-white dark:bg-red-600"
-    elif weighted_score >= 75 and not hallucination_eval.is_hallucinated and comp_score >= 60 and rel_score >= 60:
+    elif weighted_score >= 70 and accuracy_eval.contradictory_claims_count == 0 and comp_score >= 50 and rel_score >= 50:
         verdict = "Pass"
         verdict_color = "bg-emerald-500 text-white dark:bg-emerald-600"
     elif weighted_score >= 50:

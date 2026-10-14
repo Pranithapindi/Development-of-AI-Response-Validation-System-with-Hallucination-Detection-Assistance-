@@ -157,14 +157,27 @@ export function runValidation({ query, aiResponse, reference = '' }) {
 
   const summary = generateSummary(results, overallScore);
 
-  // Milestone 3 fallbacks for JS engine
+  // Compute dynamic query-to-response relevance for JS engine
+  const cleanQ = (query || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ');
+  const qTokens = cleanQ.split(/\s+/).filter(w => w.length > 2 && !['the','what','who','when','where','why','how','which','and','for','with','are','was','were','can','does','did'].includes(w));
+  const respLower = (aiResponse || '').toLowerCase();
+  const coveredAspects = qTokens.filter(t => respLower.includes(t));
+  const missingAspects = qTokens.filter(t => !respLower.includes(t));
+  const coverageRatio = qTokens.length > 0 ? (coveredAspects.length / qTokens.length) : 0.9;
+  
+  const isRefusal = ['cannot answer', 'as an ai', 'i do not know', 'no information available'].some(p => respLower.includes(p));
+  const relScore = isRefusal ? 15 : Math.round(Math.min(100, Math.max(35, (coverageRatio * 60) + (overallScore >= 50 ? 35 : 15))));
+  const relLabel = isRefusal ? 'Off-topic' : relScore >= 80 ? 'Fully Relevant' : relScore >= 50 ? 'Partially Relevant' : 'Unrelated';
+
   const relevanceEval = {
-    relevanceScore: overallScore >= 70 ? 85 : 45,
-    relevanceLabel: overallScore >= 70 ? 'Fully Relevant' : 'Partially Relevant',
-    reasoning: 'Evaluated prompt relevance using JS similarity fallback.',
-    keyAspectsCovered: ['Primary Topic'],
-    missingAspects: [],
-    queryIntent: 'Information Request',
+    relevanceScore: relScore,
+    relevanceLabel: relLabel,
+    reasoning: isRefusal 
+      ? 'Response appears to be a generic refusal.' 
+      : `Response covers ${coveredAspects.length}/${Math.max(1, qTokens.length)} key prompt terms (${relLabel}).`,
+    keyAspectsCovered: coveredAspects.slice(0, 5),
+    missingAspects: missingAspects.slice(0, 5),
+    queryIntent: query ? 'Information Request' : 'Unspecified',
   };
 
   const accuracyEval = {

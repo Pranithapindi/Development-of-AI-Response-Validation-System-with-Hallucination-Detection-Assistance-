@@ -5,7 +5,6 @@ import Dashboard from './pages/Dashboard.jsx';
 import Validate from './pages/Validate.jsx';
 import BatchEvaluation from './pages/BatchEvaluation.jsx';
 import History from './pages/History.jsx';
-import Analytics from './pages/Analytics.jsx';
 import Architecture from './pages/Architecture.jsx';
 import CodeWalkthrough from './pages/CodeWalkthrough.jsx';
 import About from './pages/About.jsx';
@@ -23,10 +22,9 @@ const PAGE_TITLES = {
   dashboard:    { title: 'Dashboard',                  subtitle: 'Overview of validation activity and analytics' },
   validate:     { title: 'Validate Response',           subtitle: 'Analyze AI responses for hallucinations and unsupported claims' },
   batch:        { title: 'Batch Evaluation',            subtitle: 'Automated CSV batch validation across all Judge Agents' },
-  evaldash:     { title: 'Evaluation Dashboard',        subtitle: 'Scoring trends, pass/fail rates, and drill-down analytics' },
+  evaldash:     { title: 'Evaluation & Analytics Dashboard', subtitle: 'Unified single-validation and batch-evaluation scoring analytics' },
   documentation:{ title: 'Technical Docs & Report',     subtitle: 'Architecture, scoring rubrics, 2-system AI demonstration, and project report' },
   history:      { title: 'Validation History',          subtitle: 'Browse and manage past validation sessions' },
-  analytics:    { title: 'Analytics',                   subtitle: 'Visualize trends, distributions, and system metrics' },
   architecture: { title: 'System Architecture',         subtitle: 'End-to-end pipeline diagram and module details' },
   walkthrough:  { title: 'Code Walkthrough',            subtitle: 'Step-by-step explanation of the validation algorithm' },
   about:        { title: 'About the Project',           subtitle: 'Research context, objectives, and technology stack' },
@@ -110,16 +108,21 @@ export default function App() {
       query:      result.query,
       aiResponse: result.aiResponse,
       reference:  result.reference,
-      claimsCount: result.claims.length,
+      claimsCount: result.claims ? result.claims.length : (result.claimsCount || 0),
       overallScore: result.overallScore,
       stats:      result.stats,
       summary:    result.summary,
       claims:     result.claims,
+      label:      result.label,
+      model:      result.model || (result.processing_time_ms ? 'NLP Backend' : 'JS Engine'),
     };
     setHistory(prev => [...prev, record]);
   }, []);
 
   const handleSaveBatch = useCallback((batchResult) => {
+    if (!batchResult.model) {
+      batchResult.model = batchResult.batch_id?.startsWith('js_') ? 'JS Engine' : 'NLP Backend';
+    }
     setBatchHistory(prev => [...prev, batchResult]);
   }, []);
 
@@ -217,7 +220,7 @@ export default function App() {
           {page === 'dashboard'    && <Dashboard onNavigate={setPage} history={history} />}
           {page === 'validate'     && <Validate onSaveHistory={handleSaveHistory} />}
           {page === 'batch'        && <BatchEvaluation onSaveBatch={handleSaveBatch} />}
-          {page === 'evaldash'     && <EvaluationDashboard batchHistory={batchHistory} />}
+          {page === 'evaldash'     && <EvaluationDashboard history={history} batchHistory={batchHistory} />}
           {page === 'documentation'&& <TechnicalDocumentation />}
           {page === 'history'      && (
             <History
@@ -226,7 +229,7 @@ export default function App() {
               onClear={handleClearHistory}
             />
           )}
-          {page === 'analytics'    && <Analytics history={history} />}
+          {page === 'analytics'    && <EvaluationDashboard history={history} batchHistory={batchHistory} />}
           {page === 'architecture' && <Architecture />}
           {page === 'walkthrough'  && <CodeWalkthrough />}
           {page === 'about'        && <About />}

@@ -68,15 +68,11 @@ class VectorStore:
             return False
 
     def query(self, query_text: str, n_results: int = 3) -> list[str]:
-        if self._embeddings is None or not self._chunks:
+        if not self._chunks:
             return []
         try:
-            from services.nlp_validator import embed_texts
-            q_emb = embed_texts([query_text])
-            if q_emb is None:
-                return []
-            q_vec  = q_emb[0]
-            scores = [_cosine(q_vec, self._embeddings[i]) for i in range(len(self._chunks))]
+            from services.nlp_validator import compute_similarity
+            scores = [compute_similarity(query_text, chunk) for chunk in self._chunks]
             top    = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)
             return [self._chunks[i] for i in top[:n_results]]
         except Exception as e:

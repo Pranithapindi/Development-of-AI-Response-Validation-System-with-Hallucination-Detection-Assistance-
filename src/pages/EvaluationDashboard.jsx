@@ -1,12 +1,19 @@
 /**
- * EvaluationDashboard.jsx  —  M4.1
- * ──────────────────────────────────
- * Evaluation Scoring Dashboard: visualises pass/fail rates, average dimension
- * scores, hallucination frequency, quality trends, and per-batch statistics
- * drawn from stored structured evaluation results.
+ * EvaluationDashboard.jsx
+ * ───────────────────────
+ * Unified Evaluation & Analytics Dashboard
+ * 
+ * Combines Single Evaluation Analytics (from real history) and Batch Evaluation
+ * Analytics (from batch history) into one comprehensive, filterable command center.
+ * Features:
+ *   - Tab switcher: Single-Validation Analytics vs Batch-Evaluation Analytics
+ *   - Dual-Model Filtering: NLP Backend vs JS Engine vs All Models
+ *   - Real-time KPI Metric cards
+ *   - Trend Analysis, Dimension Breakdown, Radar Profile, & Distribution Charts
+ *   - Drill-down record inspection
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, RadarChart, Radar,
   PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -14,18 +21,43 @@ import {
 } from 'recharts';
 import {
   BarChart2, ShieldCheck, AlertTriangle, TrendingUp, CheckCircle,
-  XCircle, MinusCircle, Filter, Eye, ChevronDown, ChevronUp,
-  Activity, Award, Search, RefreshCw,
+  XCircle, MinusCircle, Filter, ChevronDown, ChevronUp,
+  Activity, Award, Search, Cpu, Clock, Layers, Sparkles, Database
 } from 'lucide-react';
 
-// ── Colour palettes ────────────────────────────────────────────────────────────
+// ── Colors & Constants ─────────────────────────────────────────────────────────
 const VERDICT_COLORS = { Pass: '#10b981', 'Needs Improvement': '#f59e0b', Fail: '#ef4444' };
-const DIM_COLORS = { Relevance: '#8b5cf6', Accuracy: '#06b6d4', Hallucination: '#f43f5e', Completeness: '#10b981' };
-const RADAR_COLOR = '#6366f1';
+const CLAIM_COLORS   = ['#10b981', '#f97316', '#ef4444', '#f59e0b'];
+const DIM_COLORS     = { Relevance: '#8b5cf6', Accuracy: '#06b6d4', Hallucination: '#f43f5e', Completeness: '#10b981' };
+const RADAR_COLOR    = '#6366f1';
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
 const avg = (arr) => arr.length ? Math.round(arr.reduce((s, v) => s + v, 0) / arr.length) : 0;
 const pct = (n, total) => total ? Math.round((n / total) * 100) : 0;
+
+// ── Shared Stat Pill ───────────────────────────────────────────────────────────
+function StatPill({ label, value, color = 'blue', icon: Icon, subtitle }) {
+  const bgMap = {
+    emerald: 'from-emerald-500/10 to-emerald-600/5 border-emerald-500/20 text-emerald-600 dark:text-emerald-400',
+    amber:   'from-amber-500/10 to-amber-600/5 border-amber-500/20 text-amber-600 dark:text-amber-400',
+    red:     'from-red-500/10 to-red-600/5 border-red-500/20 text-red-600 dark:text-red-400',
+    blue:    'from-blue-500/10 to-blue-600/5 border-blue-500/20 text-blue-600 dark:text-blue-400',
+    violet:  'from-violet-500/10 to-violet-600/5 border-violet-500/20 text-violet-600 dark:text-violet-400',
+    rose:    'from-rose-500/10 to-rose-600/5 border-rose-500/20 text-rose-600 dark:text-rose-400',
+  };
+  const bg = bgMap[color] || bgMap.blue;
+  return (
+    <div className={`glass-card p-5 bg-gradient-to-br ${bg} border`}>
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1">{label}</p>
+          <p className="text-2xl font-extrabold">{value}</p>
+          {subtitle && <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{subtitle}</p>}
+        </div>
+        {Icon && <Icon size={22} className="opacity-75 mt-1" />}
+      </div>
+    </div>
+  );
+}
 
 function ScoreBar({ value, color = '#6366f1', label }) {
   return (
@@ -42,29 +74,6 @@ function ScoreBar({ value, color = '#6366f1', label }) {
   );
 }
 
-function StatPill({ label, value, color, icon: Icon }) {
-  const bgMap = {
-    emerald: 'from-emerald-500/10 to-emerald-600/5 border-emerald-500/20 text-emerald-600 dark:text-emerald-400',
-    amber:   'from-amber-500/10 to-amber-600/5 border-amber-500/20 text-amber-600 dark:text-amber-400',
-    red:     'from-red-500/10 to-red-600/5 border-red-500/20 text-red-600 dark:text-red-400',
-    blue:    'from-blue-500/10 to-blue-600/5 border-blue-500/20 text-blue-600 dark:text-blue-400',
-    violet:  'from-violet-500/10 to-violet-600/5 border-violet-500/20 text-violet-600 dark:text-violet-400',
-    rose:    'from-rose-500/10 to-rose-600/5 border-rose-500/20 text-rose-600 dark:text-rose-400',
-  };
-  const bg = bgMap[color] || '';
-  return (
-    <div className={`glass-card p-5 bg-gradient-to-br ${bg} border`}>
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1">{label}</p>
-          <p className="text-2xl font-extrabold">{value}</p>
-        </div>
-        {Icon && <Icon size={22} className="opacity-70 mt-1" />}
-      </div>
-    </div>
-  );
-}
-
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
@@ -77,510 +86,711 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
-// ── Main Component ─────────────────────────────────────────────────────────────
-export default function EvaluationDashboard({ batchHistory = [] }) {
+// ════════════════════════════════════════════════════════════════════════════════
+// TAB 1: SINGLE-EVALUATION ANALYTICS
+// ════════════════════════════════════════════════════════════════════════════════
+function SingleEvalAnalytics({ history = [], modelFilter, setModelFilter }) {
+  // Filter history by model
+  const filteredHistory = useMemo(() => {
+    if (modelFilter === 'ALL') return history;
+    return history.filter(h => {
+      const m = h.model || (h.processing_time_ms ? 'NLP Backend' : 'JS Engine');
+      return m === modelFilter;
+    });
+  }, [history, modelFilter]);
+
+  // Aggregate metrics from real history (no artificial seed)
+  const metrics = useMemo(() => {
+    const totalEvals      = filteredHistory.length;
+    const totalClaims     = filteredHistory.reduce((s, h) => s + (h.claimsCount || h.claims?.length || 0), 0);
+    const verified        = filteredHistory.reduce((s, h) => s + (h.stats?.supported || 0), 0);
+    const hallucinated    = filteredHistory.reduce((s, h) => s + (h.stats?.contradictory || 0), 0);
+    const uncertain       = filteredHistory.reduce((s, h) => s + (h.stats?.uncertain || 0), 0);
+    const unsupported     = filteredHistory.reduce((s, h) => s + (h.stats?.unsupported || 0), 0);
+    const avgScore        = totalEvals
+      ? Math.round(filteredHistory.reduce((s, h) => s + (h.overallScore || 0), 0) / totalEvals)
+      : 0;
+    const passes = filteredHistory.filter(h => {
+      const v = h.label || (h.overallScore >= 70 ? 'Pass' : 'Fail');
+      return v === 'Pass' || v === 'PASS';
+    }).length;
+    const passRate = totalEvals ? Math.round((passes / totalEvals) * 100) : 0;
+
+    return { totalEvals, totalClaims, verified, hallucinated, uncertain, unsupported, avgScore, passRate };
+  }, [filteredHistory]);
+
+  // Real trend data (most recent 12 evaluations)
+  const trendData = useMemo(() => {
+    if (!filteredHistory.length) return [];
+    return filteredHistory.slice(-12).map((h, i) => ({
+      label: `#${i + 1} (${new Date(h.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`,
+      hallucinationRate: h.stats?.hallucinationRisk ?? (h.stats?.contradictory ? Math.round((h.stats.contradictory / Math.max(1, h.claimsCount || 1)) * 100) : 0),
+      reliabilityScore:  h.overallScore || 0,
+    }));
+  }, [filteredHistory]);
+
+  // Real claim distribution pie
+  const claimPie = useMemo(() => {
+    return [
+      { name: 'Supported',     value: metrics.verified },
+      { name: 'Unsupported',   value: metrics.unsupported },
+      { name: 'Contradictory', value: metrics.hallucinated },
+      { name: 'Uncertain',     value: metrics.uncertain },
+    ].filter(item => item.value > 0);
+  }, [metrics]);
+
+  // Real reliability score buckets
+  const relDist = useMemo(() => {
+    const d = { 'Highly Reliable (90+)': 0, 'Mostly Reliable (75-89)': 0, 'Needs Verification (50-74)': 0, 'High Risk (<50)': 0 };
+    filteredHistory.forEach(h => {
+      const s = h.overallScore || 0;
+      if (s >= 90) d['Highly Reliable (90+)']++;
+      else if (s >= 75) d['Mostly Reliable (75-89)']++;
+      else if (s >= 50) d['Needs Verification (50-74)']++;
+      else d['High Risk (<50)']++;
+    });
+    return [
+      { name: 'Highly Reliable (90+)',     count: d['Highly Reliable (90+)'],     fill: '#10b981' },
+      { name: 'Mostly Reliable (75-89)',   count: d['Mostly Reliable (75-89)'],   fill: '#3b82f6' },
+      { name: 'Needs Verification (50-74)',count: d['Needs Verification (50-74)'],fill: '#f59e0b' },
+      { name: 'High Risk (<50)',           count: d['High Risk (<50)'],           fill: '#ef4444' },
+    ];
+  }, [filteredHistory]);
+
+  return (
+    <div className="space-y-6">
+      {/* Model Filter Bar */}
+      <div className="glass-card p-4 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <Filter size={18} className="text-indigo-500" />
+          <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Evaluation Engine Filter:</span>
+          <div className="flex items-center gap-2">
+            {[
+              { id: 'ALL', label: 'All Engines' },
+              { id: 'NLP Backend', label: 'NLP Backend (FastAPI)' },
+              { id: 'JS Engine', label: 'JS Engine (Fallback)' },
+            ].map(m => (
+              <button
+                key={m.id}
+                onClick={() => setModelFilter(m.id)}
+                className={`px-3 py-1.5 text-xs rounded-lg font-medium transition-all ${
+                  modelFilter === m.id
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                }`}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="text-xs text-slate-500 dark:text-slate-400">
+          Showing <strong>{filteredHistory.length}</strong> single evaluation{filteredHistory.length !== 1 ? 's' : ''}
+        </div>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <StatPill label="Total Evals" value={metrics.totalEvals} color="blue" icon={BarChart2} />
+        <StatPill label="Avg Reliability" value={`${metrics.avgScore}/100`} color="violet" icon={Award} />
+        <StatPill label="Pass Rate" value={`${metrics.passRate}%`} color="emerald" icon={ShieldCheck} />
+        <StatPill label="Total Claims" value={metrics.totalClaims} color="blue" icon={Cpu} />
+        <StatPill label="Supported" value={metrics.verified} color="emerald" icon={CheckCircle} />
+        <StatPill label="Contradictory" value={metrics.hallucinated} color="red" icon={AlertTriangle} />
+      </div>
+
+      {filteredHistory.length === 0 ? (
+        <div className="glass-card p-12 text-center text-slate-500 dark:text-slate-400">
+          <Layers size={40} className="mx-auto mb-3 opacity-40" />
+          <p className="font-semibold">No single evaluations found for the selected model.</p>
+          <p className="text-xs mt-1">Run an evaluation in the Validate tab to populate this dashboard.</p>
+        </div>
+      ) : (
+        <>
+          {/* Charts Row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Reliability & Hallucination Trend */}
+            <div className="glass-card p-6">
+              <h3 className="text-base font-bold text-slate-800 dark:text-white mb-1 flex items-center gap-2">
+                <TrendingUp size={18} className="text-indigo-500" />
+                Reliability & Hallucination Risk Trend
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                Sequential tracking across your recent single evaluations
+              </p>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={trendData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.5} />
+                    <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="#94a3b8" />
+                    <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} stroke="#94a3b8" />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="reliabilityScore"
+                      name="Reliability Score"
+                      stroke="#6366f1"
+                      strokeWidth={2.5}
+                      dot={{ r: 4 }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="hallucinationRate"
+                      name="Hallucination Risk %"
+                      stroke="#ef4444"
+                      strokeWidth={2}
+                      dot={{ r: 3 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Claims Classification Distribution */}
+            <div className="glass-card p-6">
+              <h3 className="text-base font-bold text-slate-800 dark:text-white mb-1 flex items-center gap-2">
+                <Activity size={18} className="text-emerald-500" />
+                Claim Verification Distribution
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                Factual verification breakdown across extracted statements
+              </p>
+              <div className="h-64">
+                {claimPie.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={claimPie}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={80}
+                        innerRadius={45}
+                        paddingAngle={4}
+                        dataKey="value"
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        labelLine={false}
+                      >
+                        {claimPie.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={CLAIM_COLORS[index % CLAIM_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-xs text-slate-400">
+                    No claims analyzed yet
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Reliability Distribution Bar Chart */}
+          <div className="glass-card p-6">
+            <h3 className="text-base font-bold text-slate-800 dark:text-white mb-1 flex items-center gap-2">
+              <BarChart2 size={18} className="text-blue-500" />
+              Evaluation Score Distribution
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+              Number of single evaluations falling into each reliability tier
+            </p>
+            <div className="h-56">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={relDist}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.5} />
+                  <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="#94a3b8" />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11 }} stroke="#94a3b8" />
+                  <Tooltip />
+                  <Bar dataKey="count" name="Evaluations" radius={[6, 6, 0, 0]}>
+                    {relDist.map((entry, index) => (
+                      <Cell key={`bar-${index}`} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════════
+// TAB 2: BATCH-EVALUATION ANALYTICS
+// ════════════════════════════════════════════════════════════════════════════════
+function BatchEvalAnalytics({ batchHistory = [], modelFilter, setModelFilter }) {
   const [selectedBatch, setSelectedBatch] = useState('ALL');
   const [verdictFilter, setVerdictFilter] = useState('ALL');
   const [scoreRange, setScoreRange] = useState([0, 100]);
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedRow, setExpandedRow] = useState(null);
-  const [showFilters, setShowFilters] = useState(false);
 
-  // Flatten all items from all batches
+  // Filter batches by model
+  const filteredBatches = useMemo(() => {
+    if (modelFilter === 'ALL') return batchHistory;
+    return batchHistory.filter(b => (b.model || (b.batch_id?.startsWith('js_') ? 'JS Engine' : 'NLP Backend')) === modelFilter);
+  }, [batchHistory, modelFilter]);
+
+  // Flatten items from matching batches
   const allItems = useMemo(() => {
     const pool = [];
-    batchHistory.forEach((batch, bIdx) => {
+    filteredBatches.forEach((batch, bIdx) => {
       (batch.results || []).forEach(item => {
-        pool.push({ ...item, batchId: batch.batch_id, batchLabel: `Batch ${bIdx + 1}` });
+        pool.push({
+          ...item,
+          batchId: batch.batch_id,
+          batchLabel: `Batch ${bIdx + 1}`,
+          batchModel: batch.model || (batch.batch_id?.startsWith('js_') ? 'JS Engine' : 'NLP Backend')
+        });
       });
     });
     return pool;
-  }, [batchHistory]);
+  }, [filteredBatches]);
 
   const filteredItems = useMemo(() => {
     return allItems.filter(item => {
       if (selectedBatch !== 'ALL' && item.batchId !== selectedBatch) return false;
       if (verdictFilter !== 'ALL' && item.verdict !== verdictFilter) return false;
-      if (item.overall_score < scoreRange[0] || item.overall_score > scoreRange[1]) return false;
-      if (searchQuery) {
+      const score = item.overall_score ?? 0;
+      if (score < scoreRange[0] || score > scoreRange[1]) return false;
+      if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        if (!item.query?.toLowerCase().includes(q) && !item.ai_response?.toLowerCase().includes(q)) return false;
+        const matchQ = (item.query || '').toLowerCase().includes(q);
+        const matchR = (item.ai_response || '').toLowerCase().includes(q);
+        if (!matchQ && !matchR) return false;
       }
       return true;
     });
   }, [allItems, selectedBatch, verdictFilter, scoreRange, searchQuery]);
 
+  // Aggregate batch statistics
   const stats = useMemo(() => {
-    const total = filteredItems.length;
-    const pass = filteredItems.filter(i => i.verdict === 'Pass').length;
-    const ni = filteredItems.filter(i => i.verdict === 'Needs Improvement').length;
-    const fail = filteredItems.filter(i => i.verdict === 'Fail').length;
-    const hallCount = filteredItems.filter(i => (i.hallucination_score || 0) > 0).length;
-    return {
-      total, pass, ni, fail, hallCount,
-      avgRel:  avg(filteredItems.map(i => i.relevance_score || 0)),
-      avgAcc:  avg(filteredItems.map(i => i.accuracy_score || 0)),
-      avgHall: avg(filteredItems.map(i => i.hallucination_score || 0)),
-      avgComp: avg(filteredItems.map(i => i.completeness_score || 0)),
-      avgOver: avg(filteredItems.map(i => i.overall_score || 0)),
-    };
+    const items = filteredItems;
+    const total = items.length;
+    if (!total) {
+      return { total: 0, passCount: 0, needsCount: 0, failCount: 0, passRate: 0, avgOverall: 0, avgRel: 0, avgAcc: 0, avgHall: 0, avgComp: 0, hallRate: 0 };
+    }
+    const passCount  = items.filter(i => i.verdict === 'Pass').length;
+    const needsCount = items.filter(i => i.verdict === 'Needs Improvement').length;
+    const failCount  = items.filter(i => i.verdict === 'Fail').length;
+    const passRate   = pct(passCount, total);
+
+    const avgOverall = avg(items.map(i => i.overall_score ?? 0));
+    const avgRel     = avg(items.map(i => i.relevance_score ?? 0));
+    const avgAcc     = avg(items.map(i => i.accuracy_score ?? 0));
+    const avgHall    = avg(items.map(i => i.hallucination_score ?? 0));
+    const avgComp    = avg(items.map(i => i.completeness_score ?? 0));
+    const hallCount  = items.filter(i => (i.hallucination_score ?? 0) > 0).length;
+    const hallRate   = pct(hallCount, total);
+
+    return { total, passCount, needsCount, failCount, passRate, avgOverall, avgRel, avgAcc, avgHall, avgComp, hallRate };
   }, [filteredItems]);
 
+  // Verdict Pie Data
   const verdictPie = useMemo(() => [
-    { name: 'Pass', value: stats.pass, color: VERDICT_COLORS.Pass },
-    { name: 'Needs Improvement', value: stats.ni, color: VERDICT_COLORS['Needs Improvement'] },
-    { name: 'Fail', value: stats.fail, color: VERDICT_COLORS.Fail },
-  ].filter(v => v.value > 0), [stats]);
+    { name: 'Pass', value: stats.passCount, color: VERDICT_COLORS.Pass },
+    { name: 'Needs Improvement', value: stats.needsCount, color: VERDICT_COLORS['Needs Improvement'] },
+    { name: 'Fail', value: stats.failCount, color: VERDICT_COLORS.Fail },
+  ].filter(d => d.value > 0), [stats]);
 
-  const dimScores = useMemo(() => [
-    { dim: 'Relevance',    score: stats.avgRel,  color: DIM_COLORS.Relevance },
-    { dim: 'Accuracy',     score: stats.avgAcc,  color: DIM_COLORS.Accuracy },
-    { dim: 'Hall. Risk',   score: stats.avgHall, color: DIM_COLORS.Hallucination },
-    { dim: 'Completeness', score: stats.avgComp, color: DIM_COLORS.Completeness },
+  // Radar Data for Dimension Balance
+  const radarData = useMemo(() => [
+    { dimension: 'Relevance',    score: stats.avgRel,     fullMark: 100 },
+    { dimension: 'Accuracy',     score: stats.avgAcc,     fullMark: 100 },
+    { dimension: 'Hallucination Safety', score: Math.max(0, 100 - stats.avgHall), fullMark: 100 },
+    { dimension: 'Completeness', score: stats.avgComp,    fullMark: 100 },
   ], [stats]);
 
-  const trendData = useMemo(() => batchHistory.map((batch, i) => {
-    const items = batch.results || [];
-    const total = items.length || 1;
-    return {
-      name: `B${i + 1}`,
-      avgScore:   Math.round(batch.avg_overall_score || avg(items.map(r => r.overall_score || 0))),
-      passRate:   pct(items.filter(r => r.verdict === 'Pass').length, total),
-      hallRate:   Math.round(batch.hallucination_rate_pct || 0),
-    };
-  }), [batchHistory]);
-
-  const radarData = [
-    { subject: 'Relevance',    score: stats.avgRel },
-    { subject: 'Accuracy',     score: stats.avgAcc },
-    { subject: 'Safety',       score: 100 - stats.avgHall },
-    { subject: 'Completeness', score: stats.avgComp },
-    { subject: 'Overall',      score: stats.avgOver },
-  ];
-
-  const scoreHistogram = useMemo(() => {
-    const bins = [
-      { range: '0–20',   min: 0,  max: 20,  count: 0 },
-      { range: '21–40',  min: 21, max: 40,  count: 0 },
-      { range: '41–60',  min: 41, max: 60,  count: 0 },
-      { range: '61–80',  min: 61, max: 80,  count: 0 },
-      { range: '81–100', min: 81, max: 100, count: 0 },
+  // Score distribution histogram
+  const histogramData = useMemo(() => {
+    const buckets = [
+      { range: '0–19',   count: 0 },
+      { range: '20–39',  count: 0 },
+      { range: '40–59',  count: 0 },
+      { range: '60–79',  count: 0 },
+      { range: '80–100', count: 0 },
     ];
     filteredItems.forEach(i => {
-      const s = i.overall_score || 0;
-      const bin = bins.find(b => s >= b.min && s <= b.max);
-      if (bin) bin.count++;
+      const s = i.overall_score ?? 0;
+      if (s < 20) buckets[0].count++;
+      else if (s < 40) buckets[1].count++;
+      else if (s < 60) buckets[2].count++;
+      else if (s < 80) buckets[3].count++;
+      else buckets[4].count++;
     });
-    return bins;
+    return buckets;
   }, [filteredItems]);
 
-  const topIssues = useMemo(() => {
-    const issues = {};
-    filteredItems.forEach(item => {
-      if ((item.relevance_score    || 0) < 60)  issues['Low Relevance']            = (issues['Low Relevance']            || 0) + 1;
-      if ((item.accuracy_score     || 0) < 60)  issues['Low Accuracy']             = (issues['Low Accuracy']             || 0) + 1;
-      if ((item.hallucination_score|| 0) > 30)  issues['High Hallucination Risk']  = (issues['High Hallucination Risk']  || 0) + 1;
-      if ((item.completeness_score || 0) < 60)  issues['Incomplete Response']      = (issues['Incomplete Response']      || 0) + 1;
-      if (item.verdict === 'Fail')               issues['Verdict: Fail']            = (issues['Verdict: Fail']            || 0) + 1;
-    });
-    return Object.entries(issues)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 6)
-      .map(([issue, count]) => ({ issue, count, pct: pct(count, filteredItems.length) }));
-  }, [filteredItems]);
-
-  const handleToggleRow = useCallback((id) => setExpandedRow(prev => prev === id ? null : id), []);
-
-  if (batchHistory.length === 0) {
-    return (
-      <div className="glass-card p-12 text-center">
-        <div className="w-20 h-20 rounded-2xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center mx-auto mb-5">
-          <BarChart2 size={36} className="text-blue-500" />
-        </div>
-        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">No Batch Evaluations Yet</h3>
-        <p className="text-slate-500 dark:text-slate-400 text-sm max-w-md mx-auto">
-          Run at least one batch evaluation in the Batch Evaluation tab to populate this dashboard.
-        </p>
-      </div>
-    );
-  }
+  // Batch trends over runs
+  const batchTrendData = useMemo(() => {
+    return filteredBatches.map((b, idx) => ({
+      name: `Batch ${idx + 1}`,
+      passRate: pct(b.pass_count ?? 0, b.total_records ?? 1),
+      avgScore: b.avg_overall_score ?? 0,
+      hallRate: b.hallucination_rate_pct ?? 0,
+    }));
+  }, [filteredBatches]);
 
   return (
     <div className="space-y-6">
-
-      {/* ── Top Stat Pills ────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
-        <StatPill label="Total Evaluated"    value={stats.total}                              color="blue"    icon={Activity}       />
-        <StatPill label="Pass"               value={`${stats.pass} (${pct(stats.pass,stats.total)}%)`} color="emerald" icon={CheckCircle}  />
-        <StatPill label="Needs Improvement"  value={`${stats.ni} (${pct(stats.ni,stats.total)}%)`}     color="amber"   icon={MinusCircle}  />
-        <StatPill label="Fail"               value={`${stats.fail} (${pct(stats.fail,stats.total)}%)`} color="red"     icon={XCircle}      />
-        <StatPill label="Avg Overall Score"  value={`${stats.avgOver}/100`}                  color="violet"  icon={Award}          />
-        <StatPill label="Hallucination Rate" value={`${pct(stats.hallCount,stats.total)}%`} color="rose"    icon={AlertTriangle}  />
-      </div>
-
-      {/* ── Filters ──────────────────────────────────────────────────────────── */}
-      <div className="glass-card p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
-            <Filter size={16} /> Dashboard Filters
-          </div>
-          <button onClick={() => setShowFilters(f => !f)} className="btn-ghost text-xs flex items-center gap-1">
-            {showFilters ? <ChevronUp size={14}/> : <ChevronDown size={14}/>}
-            {showFilters ? 'Hide' : 'Show'} Filters
-          </button>
-        </div>
-        {showFilters && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
-            <div>
-              <label className="text-xs font-semibold text-slate-500 mb-1 block">Batch</label>
-              <select
-                value={selectedBatch} onChange={e => setSelectedBatch(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="ALL">All Batches</option>
-                {batchHistory.map((b, i) => (
-                  <option key={b.batch_id} value={b.batch_id}>Batch {i + 1} — {(b.results||[]).length} items</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-slate-500 mb-1 block">Verdict</label>
-              <div className="flex gap-1 flex-wrap">
-                {['ALL','Pass','Needs Improvement','Fail'].map(v => (
-                  <button key={v} onClick={() => setVerdictFilter(v)}
-                    className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all ${
-                      verdictFilter === v ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-                    }`}>
-                    {v}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-slate-500 mb-1 block">Min Score: {scoreRange[0]}</label>
-              <input type="range" min={0} max={100} value={scoreRange[0]}
-                onChange={e => setScoreRange([+e.target.value, scoreRange[1]])}
-                className="w-full accent-blue-600" />
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-slate-500 mb-1 block">Search</label>
-              <div className="relative">
-                <Search size={14} className="absolute left-3 top-2.5 text-slate-400" />
-                <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Search queries..."
-                  className="w-full pl-8 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-            </div>
-          </div>
-        )}
-        {(selectedBatch !== 'ALL' || verdictFilter !== 'ALL' || searchQuery) && (
-          <div className="mt-3 flex items-center gap-2 text-xs">
-            <span className="text-slate-500">Showing {filteredItems.length} of {allItems.length} records</span>
-            <button
-              onClick={() => { setSelectedBatch('ALL'); setVerdictFilter('ALL'); setScoreRange([0,100]); setSearchQuery(''); }}
-              className="text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1 hover:underline"
-            >
-              <RefreshCw size={11} /> Reset
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* ── Verdict Pie + Dimension Scores ────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="glass-card p-6">
-          <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-1">Verdict Distribution</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Pass / Needs Improvement / Fail</p>
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie data={verdictPie} cx="50%" cy="50%" outerRadius={80} innerRadius={45} paddingAngle={4} dataKey="value">
-                {verdictPie.map((e, i) => <Cell key={i} fill={e.color} />)}
-              </Pie>
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="mt-4 space-y-2">
+      {/* Model & Filter Bar */}
+      <div className="glass-card p-4 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <Filter size={18} className="text-indigo-500" />
+          <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Model Filter:</span>
+          <div className="flex items-center gap-2">
             {[
-              { label:'Pass',             value:stats.pass, color:VERDICT_COLORS.Pass },
-              { label:'Needs Improvement',value:stats.ni,   color:VERDICT_COLORS['Needs Improvement'] },
-              { label:'Fail',             value:stats.fail, color:VERDICT_COLORS.Fail },
-            ].map(({ label, value, color }) => (
-              <div key={label} className="flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
-                  <span className="text-slate-600 dark:text-slate-400">{label}</span>
-                </div>
-                <span className="font-bold text-slate-800 dark:text-slate-200">{value} ({pct(value,stats.total)}%)</span>
-              </div>
+              { id: 'ALL', label: 'All Engines' },
+              { id: 'NLP Backend', label: 'NLP Backend (FastAPI)' },
+              { id: 'JS Engine', label: 'JS Engine (Fallback)' },
+            ].map(m => (
+              <button
+                key={m.id}
+                onClick={() => setModelFilter(m.id)}
+                className={`px-3 py-1.5 text-xs rounded-lg font-medium transition-all ${
+                  modelFilter === m.id
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                }`}
+              >
+                {m.label}
+              </button>
             ))}
           </div>
         </div>
 
-        <div className="glass-card p-6 lg:col-span-2">
-          <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-1">Average Dimension Scores</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Relevance · Accuracy · Hallucination · Completeness</p>
-          <div className="space-y-4 mb-6">
-            <ScoreBar label="Relevance"     value={stats.avgRel}  color={DIM_COLORS.Relevance} />
-            <ScoreBar label="Accuracy"      value={stats.avgAcc}  color={DIM_COLORS.Accuracy} />
-            <ScoreBar label="Hallucination" value={stats.avgHall} color={DIM_COLORS.Hallucination} />
-            <ScoreBar label="Completeness"  value={stats.avgComp} color={DIM_COLORS.Completeness} />
-            <ScoreBar label="Overall"       value={stats.avgOver} color="#6366f1" />
-          </div>
-          <ResponsiveContainer width="100%" height={130}>
-            <BarChart data={dimScores} barSize={32}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.15)" />
-              <XAxis dataKey="dim" tick={{ fontSize: 10 }} />
-              <YAxis domain={[0,100]} tick={{ fontSize: 10 }} />
-              <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="score" radius={[6,6,0,0]}>
-                {dimScores.map((e,i) => <Cell key={i} fill={e.color} />)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+        <div className="flex items-center gap-3">
+          <select
+            value={selectedBatch}
+            onChange={e => setSelectedBatch(e.target.value)}
+            className="text-xs px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-300"
+          >
+            <option value="ALL">All Batch Runs ({filteredBatches.length})</option>
+            {filteredBatches.map((b, i) => (
+              <option key={b.batch_id} value={b.batch_id}>
+                Batch {i + 1} — {b.model || 'Engine'} ({b.total_records} items)
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={verdictFilter}
+            onChange={e => setVerdictFilter(e.target.value)}
+            className="text-xs px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-300"
+          >
+            <option value="ALL">All Verdicts</option>
+            <option value="Pass">Pass Only</option>
+            <option value="Needs Improvement">Needs Improvement</option>
+            <option value="Fail">Fail Only</option>
+          </select>
         </div>
       </div>
 
-      {/* ── Trends + Radar ────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 glass-card p-6">
-          <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-1">Quality Trends Across Batches</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Avg score · Pass rate · Hallucination rate per batch</p>
-          {trendData.length >= 2 ? (
-            <ResponsiveContainer width="100%" height={240}>
-              <LineChart data={trendData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.2)" />
-                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                <YAxis domain={[0,100]} tick={{ fontSize: 11 }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Line type="monotone" dataKey="avgScore" name="Avg Score"        stroke="#6366f1" strokeWidth={2.5} dot={{ r:4 }} activeDot={{ r:6 }} />
-                <Line type="monotone" dataKey="passRate" name="Pass Rate %"      stroke="#10b981" strokeWidth={2}   dot={{ r:3 }} />
-                <Line type="monotone" dataKey="hallRate" name="Hallucination %"  stroke="#ef4444" strokeWidth={2} strokeDasharray="5 3" dot={{ r:3 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex items-center justify-center h-48 text-slate-400 text-sm">
-              Run 2+ batches to see trend data
-            </div>
-          )}
-        </div>
-        <div className="glass-card p-6">
-          <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-1">Quality Radar</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Multi-dimensional performance profile</p>
-          <ResponsiveContainer width="100%" height={240}>
-            <RadarChart data={radarData}>
-              <PolarGrid stroke="rgba(148,163,184,0.25)" />
-              <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10 }} />
-              <PolarRadiusAxis angle={30} domain={[0,100]} tick={{ fontSize: 9 }} />
-              <Radar name="Score" dataKey="score" stroke={RADAR_COLOR} fill={RADAR_COLOR} fillOpacity={0.35} strokeWidth={2} />
-              <Tooltip content={<CustomTooltip />} />
-            </RadarChart>
-          </ResponsiveContainer>
-        </div>
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatPill label="Batch Records" value={stats.total} color="blue" icon={BarChart2} />
+        <StatPill label="Pass Rate" value={`${stats.passRate}%`} color="emerald" icon={ShieldCheck} subtitle={`${stats.passCount} of ${stats.total} passed`} />
+        <StatPill label="Avg Reliability" value={`${stats.avgOverall}/100`} color="violet" icon={Award} subtitle="Cross-dimension average" />
+        <StatPill label="Hallucination Frequency" value={`${stats.hallRate}%`} color="red" icon={AlertTriangle} subtitle="Records with ungrounded claims" />
       </div>
 
-      {/* ── Score Histogram + Top Issues ──────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="glass-card p-6">
-          <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-1">Overall Score Distribution</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Frequency of responses per score bracket</p>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={scoreHistogram} barSize={44}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.15)" />
-              <XAxis dataKey="range" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="count" name="Responses" radius={[6,6,0,0]}>
-                {scoreHistogram.map((_, i) => {
-                  const cols = ['#ef4444','#f97316','#f59e0b','#10b981','#06b6d4'];
-                  return <Cell key={i} fill={cols[i]} />;
-                })}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+      {allItems.length === 0 ? (
+        <div className="glass-card p-12 text-center text-slate-500 dark:text-slate-400">
+          <Database size={40} className="mx-auto mb-3 opacity-40" />
+          <p className="font-semibold">No batch evaluation runs recorded yet.</p>
+          <p className="text-xs mt-1">Upload a CSV in the Batch Evaluation tab to view batch statistics.</p>
         </div>
-        <div className="glass-card p-6">
-          <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-1">Most Frequent Issues</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Recurring evaluation weaknesses</p>
-          {topIssues.length === 0 ? (
-            <div className="flex items-center justify-center h-40 text-slate-400 text-sm">
-              No issues detected — great quality batch!
+      ) : (
+        <>
+          {/* Charts Row 1 */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Verdict Distribution */}
+            <div className="glass-card p-6">
+              <h3 className="text-base font-bold text-slate-800 dark:text-white mb-1 flex items-center gap-2">
+                <ShieldCheck size={18} className="text-emerald-500" />
+                Verdict Distribution
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                Overall Pass, Needs Improvement, and Fail proportions
+              </p>
+              <div className="h-60">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={verdictPie}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      innerRadius={45}
+                      paddingAngle={4}
+                      dataKey="value"
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      labelLine={false}
+                    >
+                      {verdictPie.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-          ) : (
-            <div className="space-y-3">
-              {topIssues.map(({ issue, count, pct: p }, i) => (
-                <div key={issue} className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-500 shrink-0">
-                    {i + 1}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between mb-1">
-                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{issue}</span>
-                      <span className="text-xs text-slate-500">{count} ({p}%)</span>
-                    </div>
-                    <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                      <div className="h-full rounded-full"
-                        style={{ width:`${p}%`, backgroundColor: i<2?'#ef4444':i<4?'#f59e0b':'#6366f1' }} />
-                    </div>
-                  </div>
+
+            {/* Dimension Breakdown */}
+            <div className="glass-card p-6 flex flex-col justify-between">
+              <div>
+                <h3 className="text-base font-bold text-slate-800 dark:text-white mb-1 flex items-center gap-2">
+                  <Activity size={18} className="text-indigo-500" />
+                  Dimension Performance
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-5">
+                  Average score across all four AI evaluation agents
+                </p>
+                <div className="space-y-4">
+                  <ScoreBar label="Relevance" value={stats.avgRel} color={DIM_COLORS.Relevance} />
+                  <ScoreBar label="Accuracy" value={stats.avgAcc} color={DIM_COLORS.Accuracy} />
+                  <ScoreBar label="Hallucination Safety" value={Math.max(0, 100 - stats.avgHall)} color={DIM_COLORS.Hallucination} />
+                  <ScoreBar label="Completeness" value={stats.avgComp} color={DIM_COLORS.Completeness} />
+                  <ScoreBar label="Weighted Overall" value={stats.avgOverall} color="#6366f1" />
                 </div>
-              ))}
+              </div>
             </div>
-          )}
-        </div>
-      </div>
+          </div>
 
-      {/* ── Per-Batch Summary Table ──────────────────────────────────────────── */}
-      <div className="glass-card overflow-hidden">
-        <div className="p-5 border-b border-slate-200 dark:border-slate-800">
-          <h3 className="font-bold text-slate-800 dark:text-slate-200">Per-Batch Summary Statistics</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Aggregated metrics for each batch submission</p>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 font-bold uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
-              <tr>
-                {['Batch','Records','Pass','Needs Impr.','Fail','Avg Score','Avg Rel.','Avg Acc.','Hall. Rate','Avg Comp.'].map(h => (
-                  <th key={h} className="p-3.5">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-              {batchHistory.map((batch, i) => (
-                <tr key={batch.batch_id} className="hover:bg-slate-50/80 dark:hover:bg-slate-900/50 transition-colors">
-                  <td className="p-3.5">
-                    <div className="font-bold text-slate-800 dark:text-slate-200">Batch {i+1}</div>
-                    <div className="text-slate-400 font-mono text-[10px]">{batch.batch_id?.slice(0,8)}</div>
-                  </td>
-                  <td className="p-3.5 font-bold">{batch.total_records}</td>
-                  <td className="p-3.5">
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 font-bold">{batch.pass_count}</span>
-                  </td>
-                  <td className="p-3.5">
-                    <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 font-bold">{batch.needs_improvement_count}</span>
-                  </td>
-                  <td className="p-3.5">
-                    <span className="px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400 font-bold">{batch.fail_count}</span>
-                  </td>
-                  <td className="p-3.5 font-extrabold text-indigo-600 dark:text-indigo-400">{Math.round(batch.avg_overall_score)}/100</td>
-                  <td className="p-3.5 text-violet-600 font-semibold">{Math.round(batch.avg_relevance)}</td>
-                  <td className="p-3.5 text-cyan-600 font-semibold">{Math.round(batch.avg_accuracy)}</td>
-                  <td className="p-3.5 text-rose-600 font-semibold">{Math.round(batch.hallucination_rate_pct)}%</td>
-                  <td className="p-3.5 text-emerald-600 font-semibold">{Math.round(batch.avg_completeness)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+          {/* Charts Row 2 */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Dimension Balance Radar */}
+            <div className="glass-card p-6">
+              <h3 className="text-base font-bold text-slate-800 dark:text-white mb-1">Dimension Balance Profile</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Radar representation of agent dimension balance</p>
+              <div className="h-60">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart data={radarData}>
+                    <PolarGrid stroke="#cbd5e1" opacity={0.6} />
+                    <PolarAngleAxis dataKey="dimension" tick={{ fontSize: 11 }} stroke="#64748b" />
+                    <PolarRadiusAxis domain={[0, 100]} tick={{ fontSize: 9 }} stroke="#94a3b8" />
+                    <Radar name="Agent Score" dataKey="score" stroke={RADAR_COLOR} fill={RADAR_COLOR} fillOpacity={0.35} />
+                    <Tooltip />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
 
-      {/* ── Drill-Down Records Table ─────────────────────────────────────────── */}
-      <div className="glass-card overflow-hidden">
-        <div className="p-5 border-b border-slate-200 dark:border-slate-800">
-          <h3 className="font-bold text-slate-800 dark:text-slate-200">Individual Evaluation Records — Drill-Down</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            {filteredItems.length} record(s) shown — click <Eye size={11} className="inline"/> to expand reasoning
+            {/* Score Distribution Histogram */}
+            <div className="glass-card p-6">
+              <h3 className="text-base font-bold text-slate-800 dark:text-white mb-1">Score Distribution Histogram</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Volume of responses grouped by overall reliability score</p>
+              <div className="h-60">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={histogramData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.5} />
+                    <XAxis dataKey="range" tick={{ fontSize: 11 }} stroke="#94a3b8" />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 11 }} stroke="#94a3b8" />
+                    <Tooltip />
+                    <Bar dataKey="count" name="Records" fill="#6366f1" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+
+          {/* Detailed Batch Item Records Table */}
+          <div className="glass-card p-6">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+              <div>
+                <h3 className="text-base font-bold text-slate-800 dark:text-white">Batch Evaluation Records</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Inspect individual question-answer evaluations from batch runs
+                </p>
+              </div>
+              <div className="relative">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search questions or answers..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="pl-8 pr-4 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 w-64"
+                />
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs text-left">
+                <thead className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 uppercase font-semibold">
+                  <tr>
+                    <th className="py-2.5 px-3">Batch</th>
+                    <th className="py-2.5 px-3">Engine</th>
+                    <th className="py-2.5 px-3">Question</th>
+                    <th className="py-2.5 px-3 text-center">Relevance</th>
+                    <th className="py-2.5 px-3 text-center">Accuracy</th>
+                    <th className="py-2.5 px-3 text-center">Hallucination</th>
+                    <th className="py-2.5 px-3 text-center">Score</th>
+                    <th className="py-2.5 px-3 text-center">Verdict</th>
+                    <th className="py-2.5 px-3 text-center">Details</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
+                  {filteredItems.slice(0, 20).map((item, idx) => {
+                    const isExpanded = expandedRow === idx;
+                    return (
+                      <React.Fragment key={idx}>
+                        <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                          <td className="py-2.5 px-3 font-medium text-slate-500">{item.batchLabel}</td>
+                          <td className="py-2.5 px-3">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+                              item.batchModel === 'NLP Backend'
+                                ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                            }`}>
+                              {item.batchModel}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3 max-w-xs truncate font-medium">{item.query}</td>
+                          <td className="py-2.5 px-3 text-center">{item.relevance_score ?? '—'}</td>
+                          <td className="py-2.5 px-3 text-center">{item.accuracy_score ?? '—'}</td>
+                          <td className="py-2.5 px-3 text-center">
+                            <span className={(item.hallucination_score ?? 0) > 0 ? 'text-red-500 font-bold' : 'text-slate-500'}>
+                              {item.hallucination_score ?? 0}%
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3 text-center font-bold">{item.overall_score ?? 0}</td>
+                          <td className="py-2.5 px-3 text-center">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                              item.verdict === 'Pass' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' :
+                              item.verdict === 'Needs Improvement' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' :
+                              'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
+                            }`}>
+                              {item.verdict}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3 text-center">
+                            <button
+                              onClick={() => setExpandedRow(isExpanded ? null : idx)}
+                              className="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400"
+                            >
+                              {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                            </button>
+                          </td>
+                        </tr>
+                        {isExpanded && (
+                          <tr className="bg-slate-50/70 dark:bg-slate-800/40">
+                            <td colSpan={9} className="p-4 text-xs space-y-2">
+                              <div>
+                                <span className="font-bold text-slate-700 dark:text-slate-300">Question: </span>
+                                <span>{item.query}</span>
+                              </div>
+                              <div>
+                                <span className="font-bold text-slate-700 dark:text-slate-300">AI Response: </span>
+                                <span className="text-slate-600 dark:text-slate-400">{item.ai_response}</span>
+                              </div>
+                              {item.reference && (
+                                <div>
+                                  <span className="font-bold text-slate-700 dark:text-slate-300">Reference Ground Truth: </span>
+                                  <span className="text-slate-600 dark:text-slate-400">{item.reference}</span>
+                                </div>
+                              )}
+                              {item.validation_report?.summary && (
+                                <div className="mt-2 p-2.5 rounded bg-indigo-50/50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/50">
+                                  <strong>Consolidated Reasoning: </strong> {item.validation_report.summary}
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            {filteredItems.length > 20 && (
+              <p className="text-xs text-center text-slate-400 mt-3">
+                Showing top 20 of {filteredItems.length} records. Use search to refine.
+              </p>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════════
+// MASTER UNIFIED EVALUATION DASHBOARD
+// ════════════════════════════════════════════════════════════════════════════════
+export default function EvaluationDashboard({ history = [], batchHistory = [] }) {
+  const [activeTab, setActiveTab] = useState('single'); // 'single' | 'batch'
+  const [modelFilter, setModelFilter] = useState('ALL');
+
+  return (
+    <div className="space-y-6">
+      {/* Top Header & Tab Navigation */}
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
+        <div>
+          <h2 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+            <BarChart2 className="text-indigo-600" />
+            Evaluation & Analytics Dashboard
+          </h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Unified analytics command center covering both individual response validations and batch evaluations
           </p>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 font-bold uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
-              <tr>
-                {['Batch','Question','Rel.','Acc.','Hall.%','Comp.','Score','Verdict','Details'].map(h => (
-                  <th key={h} className="p-3.5">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-              {filteredItems.slice(0, 50).map((item) => (
-                <React.Fragment key={`${item.batchId}-${item.id || item.row_index}`}>
-                  <tr className="hover:bg-slate-50/80 dark:hover:bg-slate-900/50 transition-colors">
-                    <td className="p-3.5 text-slate-400 font-mono">{item.batchLabel}</td>
-                    <td className="p-3.5 font-semibold text-slate-800 dark:text-slate-200 max-w-xs truncate" title={item.query}>{item.query}</td>
-                    <td className="p-3.5 font-semibold text-violet-600">{item.relevance_score}</td>
-                    <td className="p-3.5 font-semibold text-cyan-600">{item.accuracy_score}</td>
-                    <td className="p-3.5 font-semibold text-rose-500">{item.hallucination_score}%</td>
-                    <td className="p-3.5 font-semibold text-emerald-600">{item.completeness_score}</td>
-                    <td className="p-3.5 font-extrabold text-slate-900 dark:text-slate-100">{item.overall_score}</td>
-                    <td className="p-3.5">
-                      <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${
-                        item.verdict==='Pass'?'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400':
-                        item.verdict==='Needs Improvement'?'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400':
-                        'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'
-                      }`}>{item.verdict}</span>
-                    </td>
-                    <td className="p-3.5">
-                      <button onClick={() => handleToggleRow(`${item.batchId}-${item.id||item.row_index}`)}
-                        className="btn-ghost p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg">
-                        <Eye size={15} />
-                      </button>
-                    </td>
-                  </tr>
-                  {expandedRow === `${item.batchId}-${item.id||item.row_index}` && (
-                    <tr>
-                      <td colSpan={9} className="bg-slate-50/80 dark:bg-slate-900/60 p-5">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                          <div className="space-y-2">
-                            <div className="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
-                              <p className="font-bold text-slate-500 mb-1">Question</p>
-                              <p className="text-slate-800 dark:text-slate-200 leading-relaxed">{item.query}</p>
-                            </div>
-                            <div className="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
-                              <p className="font-bold text-slate-500 mb-1">AI Response</p>
-                              <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{item.ai_response}</p>
-                            </div>
-                            {item.reference && (
-                              <div className="bg-blue-50/60 dark:bg-blue-900/20 p-3 rounded-xl border border-blue-200 dark:border-blue-800">
-                                <p className="font-bold text-blue-600 mb-1">Reference</p>
-                                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{item.reference}</p>
-                              </div>
-                            )}
-                          </div>
-                          <div className="space-y-2">
-                            {item.validation_report?.summary && (
-                              <div className="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
-                                <p className="font-bold text-slate-500 mb-1">Consolidated Reasoning</p>
-                                <p className="text-slate-600 dark:text-slate-400 leading-relaxed">{item.validation_report.summary}</p>
-                              </div>
-                            )}
-                            {item.validation_report?.completeness_eval?.missing_aspects?.length > 0 && (
-                              <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-xl border border-red-200 dark:border-red-800">
-                                <p className="font-bold text-red-600 mb-1">Missing Aspects (Completeness)</p>
-                                <ul className="list-disc pl-4 text-red-700 dark:text-red-300 space-y-0.5">
-                                  {item.validation_report.completeness_eval.missing_aspects.map((m,i)=><li key={i}>{m}</li>)}
-                                </ul>
-                              </div>
-                            )}
-                            {item.validation_report?.hallucination_eval?.flagged_claims?.length > 0 && (
-                              <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-xl border border-orange-200 dark:border-orange-800">
-                                <p className="font-bold text-orange-600 mb-1">Hallucinated Claims</p>
-                                <ul className="list-disc pl-4 text-orange-700 dark:text-orange-300 space-y-0.5">
-                                  {item.validation_report.hallucination_eval.flagged_claims.map((c,i)=>(
-                                    <li key={i}>{c.claim_text || c.text}</li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              ))}
-              {filteredItems.length === 0 && (
-                <tr><td colSpan={9} className="p-8 text-center text-slate-400">No records match current filters.</td></tr>
-              )}
-            </tbody>
-          </table>
+
+        {/* Tab Controls */}
+        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+          <button
+            onClick={() => setActiveTab('single')}
+            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg transition-all ${
+              activeTab === 'single'
+                ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Sparkles size={14} />
+            Single-Validation Analytics
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300">
+              {history.length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('batch')}
+            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg transition-all ${
+              activeTab === 'batch'
+                ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Database size={14} />
+            Batch-Evaluation Analytics
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300">
+              {batchHistory.length}
+            </span>
+          </button>
         </div>
-        {filteredItems.length > 50 && (
-          <div className="p-3 text-center text-xs text-slate-400 border-t border-slate-200 dark:border-slate-800">
-            Showing first 50 of {filteredItems.length} records. Use filters to narrow results.
-          </div>
-        )}
       </div>
+
+      {/* Tab Content */}
+      {activeTab === 'single' ? (
+        <SingleEvalAnalytics
+          history={history}
+          modelFilter={modelFilter}
+          setModelFilter={setModelFilter}
+        />
+      ) : (
+        <BatchEvalAnalytics
+          batchHistory={batchHistory}
+          modelFilter={modelFilter}
+          setModelFilter={setModelFilter}
+        />
+      )}
     </div>
   );
 }

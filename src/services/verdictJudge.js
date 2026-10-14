@@ -38,7 +38,7 @@ export function evaluateVerdict({ relevanceEval, accuracyEval, hallucinationEval
   if (isCritical) {
     verdict = 'Fail';
     badgeColor = 'bg-red-500 text-white';
-  } else if (weighted >= 75 && hallRisk === 0 && compScore >= 60 && relScore >= 60) {
+  } else if (weighted >= 70 && hallRisk <= 15 && compScore >= 55 && relScore >= 55) {
     verdict = 'Pass';
     badgeColor = 'bg-emerald-500 text-white';
   } else if (weighted >= 50) {

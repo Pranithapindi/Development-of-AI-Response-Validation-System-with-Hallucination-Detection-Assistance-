@@ -95,18 +95,26 @@ export function validateEvidence(claimText, referenceText) {
 
   for (const sentence of refSentences) {
     const sentTokens = tokenise(sentence);
-    let score = jaccardSimilarity(claimTokens, sentTokens);
+    const setA = new Set(claimTokens);
+    const setB = new Set(sentTokens);
+    const intersection = [...setA].filter(x => setB.has(x) || [...setB].some(y => (x.length > 3 && y.length > 3 && (x.startsWith(y.slice(0, 4)) || y.startsWith(x.slice(0, 4)))))).length;
+    const union = new Set([...setA, ...setB]).size;
+    const jaccard = union === 0 ? 0 : intersection / union;
+    const recall = claimTokens.length > 0 ? intersection / claimTokens.length : 0;
+    
+    // Balanced similarity combining symmetric Jaccard and asymmetric directional recall
+    let score = (0.35 * jaccard) + (0.65 * recall);
 
     // Bonus: years present in claim also appear in this sentence
     const sentYears = extractYears(sentence);
     const yearOverlap = claimYears.filter(y => sentYears.includes(y)).length;
-    score += yearOverlap * 0.12;
+    score += yearOverlap * 0.15;
 
     // Bonus: numbers in general
     const claimNums = (claimText.match(/\b\d+\b/g) || []);
     const sentNums  = (sentence.match(/\b\d+\b/g)  || []);
     const numOverlap = claimNums.filter(n => sentNums.includes(n)).length;
-    score += numOverlap * 0.06;
+    score += numOverlap * 0.08;
 
     if (score > bestScore) {
       bestScore    = score;

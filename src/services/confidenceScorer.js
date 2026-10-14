@@ -64,8 +64,8 @@ export function classifyStatus(similarityScore, contradictionScore, hasReference
   }
 
   if (contradictionScore > 0.50) return 'contradictory';
-  if (similarityScore  > 0.60)  return 'supported';
-  if (similarityScore  > 0.30)  return 'uncertain';
+  if (similarityScore  >= 0.40) return 'supported';
+  if (similarityScore  >= 0.20) return 'uncertain';
   return 'unsupported';
 }
 

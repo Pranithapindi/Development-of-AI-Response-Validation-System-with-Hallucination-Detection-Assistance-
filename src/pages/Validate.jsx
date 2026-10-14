@@ -95,19 +95,23 @@ export default function Validate({ onSaveHistory }) {
     setTimeout(async () => {
       try {
         let raw;
+        let modelUsed = 'JS Engine';
         if (backendOnline) {
-          // ── Use FastAPI backend (SentenceTransformers + ChromaDB + LangChain)
+          // ── Primary: FastAPI backend
           raw = await validateResponseAPI({
             query,
             ai_response: response,
             reference: reference || '',
           });
+          modelUsed = 'NLP Backend';
         } else {
           // ── Fallback: local JS heuristic engine
           raw = runValidation({ query, aiResponse: response, reference });
+          modelUsed = 'JS Engine';
         }
 
         const normalised = normaliseResult(raw);
+        normalised.model = modelUsed;
         setResult(normalised);
         setPipelineStage(8);
 
@@ -115,6 +119,7 @@ export default function Validate({ onSaveHistory }) {
           onSaveHistory({
             ...normalised,
             claimsCount: normalised.claims.length,
+            model: modelUsed,
           });
         }
       } catch (err) {
@@ -122,9 +127,10 @@ export default function Validate({ onSaveHistory }) {
         // Fallback to JS engine on error
         const fallback = runValidation({ query, aiResponse: response, reference });
         const normalised = normaliseResult(fallback);
+        normalised.model = 'JS Engine';
         setResult(normalised);
         setPipelineStage(8);
-        if (onSaveHistory) onSaveHistory({ ...normalised, claimsCount: normalised.claims.length });
+        if (onSaveHistory) onSaveHistory({ ...normalised, claimsCount: normalised.claims.length, model: 'JS Engine' });
       } finally {
         setIsAnalyzing(false);
       }

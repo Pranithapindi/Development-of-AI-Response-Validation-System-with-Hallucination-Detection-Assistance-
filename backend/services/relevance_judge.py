@@ -116,7 +116,7 @@ def evaluate_relevance(query: str, ai_response: str) -> RelevanceEvaluationResul
     
     if query_keywords:
         for kw in query_keywords:
-            if kw in resp_lower:
+            if kw in resp_lower or (len(kw) >= 4 and kw[:4] in resp_lower):
                 covered_aspects.append(kw)
             else:
                 missing_aspects.append(kw)

@@ -97,6 +97,7 @@ export default function BatchEvaluation({ onSaveBatch }) {
       }, 400);
 
       const result = await uploadBatchCSV(file);
+      result.model = result.model || 'NLP Backend';
       clearInterval(timer);
       setProgress(100);
       setBatchResult(result);
@@ -155,6 +156,7 @@ export default function BatchEvaluation({ onSaveBatch }) {
         const fallbackResult = {
           batch_id: `js_${Date.now()}`,
           timestamp: new Date().toISOString(),
+          model: 'JS Engine',
           total_records: total,
           valid_records: total,
           failed_records: 0,

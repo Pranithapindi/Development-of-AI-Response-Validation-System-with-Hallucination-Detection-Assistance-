@@ -18,6 +18,7 @@ const NEGATIONS = [
   'not', 'no', 'never', 'neither', 'nor', 'without', 'incorrectly',
   "wasn't", "isn't", "weren't", "aren't", "didn't", "doesn't",
   "hadn't", "hasn't", "haven't", 'false', 'wrong', 'incorrect', 'mistakenly',
+  'cannot', 'cant', "can't", 'wont', "won't",
 ];
 
 /**
@@ -51,16 +52,26 @@ function years(text) {
 /**
  * Detect if a reference sentence contains negation near a claim keyword,
  * which would imply a contradiction.
- * @param {string[]} claimKw  - Claim keywords
- * @param {string}   refSent  - A single reference sentence
- * @returns {number} contradiction boost 0–0.5
+ * @param {string}   claimText - Original claim text
+ * @param {string[]} claimKw   - Claim keywords
+ * @param {string}   refSent   - A single reference sentence
+ * @returns {number} contradiction boost 0–0.75
  */
-function negationScore(claimKw, refSent) {
+function negationScore(claimText, claimKw, refSent) {
   const lower = refSent.toLowerCase();
-  const hasClaimKw = claimKw.some(w => lower.includes(w));
-  if (!hasClaimKw) return 0;
-  const hasNegation = NEGATIONS.some(n => lower.includes(n));
-  return hasNegation ? 0.35 : 0;
+  const matchingKws = claimKw.filter(w => lower.includes(w));
+  if (matchingKws.length < Math.min(2, claimKw.length)) return 0;
+  const sentWords = lower.replace(/[^a-z0-9\s]/g, ' ').split(/\s+/);
+  const sentHasNeg = NEGATIONS.some(n => sentWords.includes(n));
+
+  const claimWords = (claimText || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/);
+  const claimHasNeg = NEGATIONS.some(n => claimWords.includes(n));
+
+  // Only flag when there is a true polarity clash (one asserts, the other denies)
+  if (claimHasNeg !== sentHasNeg && (claimHasNeg || sentHasNeg)) {
+    return 0.75;
+  }
+  return 0;
 }
 
 /**
@@ -120,24 +131,22 @@ export function detectContradiction(claimText, referenceText, similarityScore) {
   // Sum negation signals across all reference sentences
   let negTotal = 0;
   for (const sent of refSentences) {
-    negTotal += negationScore(claimKw, sent);
+    negTotal += negationScore(claimText, claimKw, sent);
   }
-  const negFactor = Math.min(0.5, negTotal);
+  const negFactor = Math.min(1.0, negTotal);
 
   // Topic mismatch signal
   const mismatch = topicMismatchScore(claimText, referenceText);
 
-  // If similarity is high, contradiction is unlikely (evidence supports → not contradicting)
-  // If similarity is medium with negation → likely contradictory
+  // If negation is directly present on claim keywords, it is contradictory
   let score = 0;
-  if (similarityScore >= 0.55) {
-    // Evidence present — check for negation patterns
+  if (negFactor >= 0.5) {
+    score = Math.max(0.75, negFactor);
+  } else if (similarityScore >= 0.55) {
     score = negFactor * 0.8;
   } else if (similarityScore >= 0.2) {
-    // Partial evidence — use mismatch + negation
     score = negFactor * 0.6 + mismatch * 0.4;
   } else {
-    // No matching evidence — small base contradiction from mismatch
     score = mismatch * 0.3;
   }
 

@@ -130,16 +130,16 @@ def evaluate_hallucinations(
         # Calculate Hallucination Risk Score (0-100%)
         # Contradictions contribute 100% weight, unsupported 50% weight
         if total_claims > 0:
-            weighted_flagged = (contradictory_count * 1.0) + (unsupported_count * 0.5)
+            weighted_flagged = (contradictory_count * 1.0) + (unsupported_count * 0.25)
             hallucination_score = int(min(100, round((weighted_flagged / total_claims) * 100)))
         else:
             hallucination_score = 0
 
-        is_hallucinated = flagged_count > 0
+        is_hallucinated = contradictory_count > 0 or (total_claims > 0 and (unsupported_count / total_claims) >= 0.75)
 
-        if hallucination_score >= 50 or contradictory_count > 0:
+        if contradictory_count > 0:
             hallucination_label = "Severe Hallucination"
-        elif hallucination_score > 0:
+        elif unsupported_count > 0:
             hallucination_label = "Minor Hallucination"
         else:
             hallucination_label = "No Hallucination"

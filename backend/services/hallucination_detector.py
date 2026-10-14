@@ -22,6 +22,7 @@ NEGATION_WORDS = {
     "wasn't", "isn't", "weren't", "aren't", "didn't", "doesn't",
     "hadn't", "hasn't", "haven't", "false", "wrong", "incorrect",
     "mistakenly", "erroneously", "falsely", "inaccurately",
+    "cannot", "cant", "can't", "wont", "won't",
 }
 
 # Common stop words to ignore in keyword extraction
@@ -42,26 +43,33 @@ def _extract_keywords(text: str) -> set[str]:
     return {w for w in words if len(w) > 3 and w not in STOP_WORDS}
 
 
-def _negation_score(claim_keywords: set[str], reference_text: str) -> float:
+def _negation_score(claim_text: str, claim_keywords: set[str], reference_text: str) -> float:
     """
-    Check if the reference contains negation near claim keywords.
-    Returns a contradiction signal in [0, 0.8].
+    Check if the reference contradicts the claim via negation mismatch.
+    Contradiction occurs when one source asserts a claim positively and the other negates it.
+    Returns a contradiction signal in [0, 0.9].
     """
     sentences = re.split(r"(?<=[.!?])\s+", reference_text)
+    claim_words = set(re.findall(r"\b[a-z']+\b", claim_text.lower()))
+    claim_has_neg = bool(claim_words & NEGATION_WORDS)
+
     total_neg = 0.0
 
     for sent in sentences:
         lower = sent.lower()
-        # Does this sentence discuss topics from the claim?
-        has_claim_topic = any(kw in lower for kw in claim_keywords)
-        if not has_claim_topic:
+        # Does this sentence meaningfully discuss the claim topic (at least 2 matching keywords)?
+        matching_kws = [kw for kw in claim_keywords if kw in lower]
+        if len(matching_kws) < min(2, len(claim_keywords)):
             continue
         # Does it contain negation?
-        has_negation = any(neg in lower.split() for neg in NEGATION_WORDS)
-        if has_negation:
-            total_neg += 0.60
+        sent_words = set(re.findall(r"\b[a-z']+\b", lower))
+        sent_has_neg = bool(sent_words & NEGATION_WORDS)
+        
+        # Only flag if there is a true polarity clash (one asserts, the other denies)
+        if claim_has_neg != sent_has_neg and (claim_has_neg or sent_has_neg):
+            total_neg += 0.70
 
-    return min(0.8, total_neg)
+    return min(0.9, total_neg)
 
 
 def _topic_mismatch_score(claim_keywords: set[str], ref_keywords: set[str]) -> float:
@@ -113,11 +121,13 @@ def _number_conflict_score(claim_text: str, reference_text: str) -> float:
     if not claim_nums or not ref_nums:
         return 0.0
 
-    # If claim has numbers that are absent from reference when reference has numbers
-    diff = claim_nums - ref_nums
-    if diff:
-        return 0.8  # Strong numerical contradiction
-    return 0.0
+    # If claim and reference share any numbers (e.g. both cite 100 C, or 1989),
+    # then they agree on primary metrics and do not contradict numerically
+    if claim_nums & ref_nums:
+        return 0.0
+
+    # If both have numbers but they completely disagree on values (e.g. 1921 vs 1905, 100 vs 90)
+    return 0.75
 
 
 def detect_contradiction(
@@ -142,13 +152,15 @@ def detect_contradiction(
     claim_kw = _extract_keywords(claim_text)
     ref_kw   = _extract_keywords(reference_text)
 
-    neg_factor = _negation_score(claim_kw, reference_text)
+    neg_factor = _negation_score(claim_text, claim_kw, reference_text)
     mismatch   = _topic_mismatch_score(claim_kw, ref_kw)
     num_conflict = _number_conflict_score(claim_text, reference_text)
 
     # Composite contradiction score
     if num_conflict > 0:
         score = max(num_conflict, neg_factor * 0.9 + 0.3)
+    elif neg_factor >= 0.5:
+        score = max(0.65, neg_factor * 0.9)
     elif similarity_score >= 0.55:
         score = max(neg_factor * 0.9, mismatch * 0.5)
     elif similarity_score >= 0.25:

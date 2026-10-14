@@ -22,8 +22,19 @@ logger = logging.getLogger(__name__)
 
 # ── TF-IDF helpers ────────────────────────────────────────────────────────────
 
+STOP_WORDS = {
+    "the", "a", "an", "is", "was", "were", "are", "be", "been", "being",
+    "have", "has", "had", "do", "does", "did", "will", "would", "shall", "should",
+    "may", "might", "must", "can", "could", "to", "of", "in", "on", "at", "for",
+    "with", "by", "from", "as", "that", "this", "these", "those", "it", "he", "she",
+    "they", "we", "i", "you", "and", "but", "or", "so", "if", "then", "there",
+    "what", "when", "where", "who", "which", "why", "how"
+}
+
 def _tokenize(text: str) -> list[str]:
-    return re.findall(r"[a-z0-9]+", text.lower())
+    raw = re.findall(r"[a-z0-9]+", text.lower())
+    filtered = [t for t in raw if t not in STOP_WORDS]
+    return filtered if filtered else raw
 
 
 def _build_vocab(docs: list[str]) -> dict[str, int]:
@@ -82,10 +93,26 @@ def compute_similarity(text_a: str, text_b: str) -> float:
     if not text_a.strip() or not text_b.strip():
         return 0.0
     try:
+        toks_a = _tokenize(text_a)
+        toks_b = _tokenize(text_b)
+        if not toks_a or not toks_b:
+            return 0.0
+
+        # Term overlap with prefix stem matching (handles abbreviations like atm/atmospheric)
+        matched_a = 0
+        set_b = set(toks_b)
+        for ta in set(toks_a):
+            if ta in set_b or any(len(ta) >= 3 and len(tb) >= 3 and (ta.startswith(tb[:3]) or tb.startswith(ta[:3])) for tb in set_b):
+                matched_a += 1
+        recall_a = matched_a / len(set(toks_a))
+
         docs  = [text_a, text_b]
         vocab = _build_vocab(docs)
         idf   = _compute_idf(docs, vocab)
-        score = _cosine(_tfidf_vector(text_a, vocab, idf), _tfidf_vector(text_b, vocab, idf))
+        cos   = _cosine(_tfidf_vector(text_a, vocab, idf), _tfidf_vector(text_b, vocab, idf))
+
+        # Balanced similarity combining symmetric TF-IDF cosine and asymmetric content recall
+        score = (0.35 * cos) + (0.65 * recall_a)
         return max(0.0, min(1.0, score))
     except Exception as e:
         logger.warning("TF-IDF similarity failed: %s", e)
@@ -96,13 +123,9 @@ def find_best_evidence(claim: str, reference_sentences: list[str]) -> tuple[floa
     if not reference_sentences:
         return 0.0, "No reference context available."
     try:
-        all_docs = [claim] + reference_sentences
-        vocab    = _build_vocab(all_docs)
-        idf      = _compute_idf(all_docs, vocab)
-        cv       = _tfidf_vector(claim, vocab, idf)
-        scores   = [_cosine(cv, _tfidf_vector(s, vocab, idf)) for s in reference_sentences]
+        scores = [compute_similarity(claim, s) for s in reference_sentences]
         best_idx = int(np.argmax(scores))
-        return max(0.0, min(1.0, scores[best_idx])), reference_sentences[best_idx]
+        return scores[best_idx], reference_sentences[best_idx]
     except Exception as e:
         logger.warning("find_best_evidence failed: %s", e)
         return 0.0, reference_sentences[0] if reference_sentences else ""

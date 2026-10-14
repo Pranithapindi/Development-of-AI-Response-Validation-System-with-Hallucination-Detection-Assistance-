@@ -98,10 +98,10 @@ def evaluate_accuracy(
                     w for w in re.findall(r"\b[A-Z][a-z]+\b", claim_text)
                     if w.lower() not in {"the", "this", "that", "there", "what", "who", "when", "where", "why", "how", "it", "in", "on", "at", "for"}
                 }
-                if claim_entities:
+                if claim_entities and sim_score < 0.65:
                     ref_lower = ref_context.lower()
                     missing_entities = [e for e in claim_entities if e.lower() not in ref_lower]
-                    if len(missing_entities) >= len(claim_entities) * 0.5:
+                    if len(missing_entities) == len(claim_entities):
                         entity_mismatch = True
 
             # Claim level accuracy classification
@@ -114,9 +114,9 @@ def evaluate_accuracy(
             elif sim_score >= 0.75:
                 correct_count += 1
                 claim_scores.append(1.0)
-            elif sim_score >= 0.40:
+            elif sim_score >= 0.20:
                 partially_correct_count += 1
-                claim_scores.append(0.5)
+                claim_scores.append(0.6)
             elif has_reference:
                 incorrect_count += 1
                 claim_scores.append(0.2)
