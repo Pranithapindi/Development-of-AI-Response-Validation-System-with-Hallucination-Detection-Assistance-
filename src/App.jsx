@@ -15,6 +15,8 @@ import Auth from './pages/Auth.jsx';
 import AccountSettings from './pages/AccountSettings.jsx';
 import { SEED_HISTORY } from './data/demoData.js';
 
+import { checkHealth, fetchHistory } from './services/api.js';
+
 const STORAGE_KEY       = 'ai_validator_history';
 const BATCH_STORAGE_KEY = 'ai_validator_batch_history';
 
@@ -101,29 +103,64 @@ export default function App() {
     saveBatchHistory(batchHistory);
   }, [batchHistory]);
 
+  // Sync backend history records on mount so single analytics and history are always up to date
+  useEffect(() => {
+    let mounted = true;
+    checkHealth().then(health => {
+      if (health?.status === 'ok') {
+        fetchHistory().then(data => {
+          if (!mounted || !data?.records) return;
+          const backendRecs = data.records.map(r => ({
+            id:           r.id || r.timestamp,
+            timestamp:    r.timestamp || new Date().toISOString(),
+            query:        r.query || '—',
+            aiResponse:   r.ai_response || r.aiResponse || '',
+            reference:    r.reference || '',
+            claimsCount:  r.claims_count || r.claims?.length || 0,
+            overallScore: r.overall_score ?? r.overallScore ?? 0,
+            label:        r.label || r.verdict || '',
+            stats:        r.stats || {},
+            summary:      r.summary || '',
+            claims:       r.claims || [],
+            source:       'backend',
+            model:        'NLP Backend',
+          }));
+
+          setHistory(prev => {
+            const seen = new Set(prev.map(p => p.id || p.timestamp));
+            const newBackend = backendRecs.filter(b => !seen.has(b.id) && !seen.has(b.timestamp));
+            if (newBackend.length === 0) return prev;
+            return [...newBackend, ...prev];
+          });
+        }).catch(() => {});
+      }
+    }).catch(() => {});
+    return () => { mounted = false; };
+  }, []);
+
   const handleSaveHistory = useCallback((result) => {
     const record = {
-      id:         `h${Date.now()}`,
-      timestamp:  result.timestamp,
-      query:      result.query,
-      aiResponse: result.aiResponse,
-      reference:  result.reference,
+      id:          result.id || `h${Date.now()}`,
+      timestamp:   result.timestamp || new Date().toISOString(),
+      query:       result.query || '—',
+      aiResponse:  result.aiResponse || result.ai_response || '',
+      reference:   result.reference || '',
       claimsCount: result.claims ? result.claims.length : (result.claimsCount || 0),
-      overallScore: result.overallScore,
-      stats:      result.stats,
-      summary:    result.summary,
-      claims:     result.claims,
-      label:      result.label,
-      model:      result.model || (result.processing_time_ms ? 'NLP Backend' : 'JS Engine'),
+      overallScore: result.overallScore ?? result.overall_score ?? 0,
+      stats:       result.stats || {},
+      summary:     result.summary || '',
+      claims:      result.claims || [],
+      label:       result.label || result.verdict || '',
+      model:       result.model || (result.processing_time_ms ? 'NLP Backend' : 'JS Engine'),
     };
-    setHistory(prev => [...prev, record]);
+    setHistory(prev => [record, ...prev.filter(h => h.id !== record.id)]);
   }, []);
 
   const handleSaveBatch = useCallback((batchResult) => {
     if (!batchResult.model) {
       batchResult.model = batchResult.batch_id?.startsWith('js_') ? 'JS Engine' : 'NLP Backend';
     }
-    setBatchHistory(prev => [...prev, batchResult]);
+    setBatchHistory(prev => [batchResult, ...prev.filter(b => b.batch_id !== batchResult.batch_id)]);
   }, []);
 
   const handleDeleteHistory = useCallback((idOrTimestamp) => {
@@ -132,6 +169,14 @@ export default function App() {
 
   const handleClearHistory = useCallback(() => {
     setHistory([]);
+  }, []);
+
+  const handleDeleteBatch = useCallback((batchIdOrTimestamp) => {
+    setBatchHistory(prev => prev.filter(b => b.batch_id !== batchIdOrTimestamp && b.timestamp !== batchIdOrTimestamp));
+  }, []);
+
+  const handleClearBatchHistory = useCallback(() => {
+    setBatchHistory([]);
   }, []);
 
   const handleOpenAuth = useCallback((mode = 'login') => {
@@ -225,11 +270,14 @@ export default function App() {
           {page === 'history'      && (
             <History
               history={history}
+              batchHistory={batchHistory}
               onDelete={handleDeleteHistory}
               onClear={handleClearHistory}
+              onDeleteBatch={handleDeleteBatch}
+              onClearBatch={handleClearBatchHistory}
+              onNavigate={setPage}
             />
           )}
-          {page === 'analytics'    && <EvaluationDashboard history={history} batchHistory={batchHistory} />}
           {page === 'architecture' && <Architecture />}
           {page === 'walkthrough'  && <CodeWalkthrough />}
           {page === 'about'        && <About />}

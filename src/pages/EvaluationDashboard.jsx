@@ -90,6 +90,9 @@ const CustomTooltip = ({ active, payload, label }) => {
 // TAB 1: SINGLE-EVALUATION ANALYTICS
 // ════════════════════════════════════════════════════════════════════════════════
 function SingleEvalAnalytics({ history = [], modelFilter, setModelFilter }) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [expandedRow, setExpandedRow] = useState(null);
+
   // Filter history by model
   const filteredHistory = useMemo(() => {
     if (modelFilter === 'ALL') return history;
@@ -98,6 +101,16 @@ function SingleEvalAnalytics({ history = [], modelFilter, setModelFilter }) {
       return m === modelFilter;
     });
   }, [history, modelFilter]);
+
+  const searchedHistory = useMemo(() => {
+    if (!searchQuery.trim()) return filteredHistory;
+    const q = searchQuery.toLowerCase();
+    return filteredHistory.filter(h =>
+      (h.query || '').toLowerCase().includes(q) ||
+      (h.aiResponse || h.ai_response || '').toLowerCase().includes(q) ||
+      (h.summary || '').toLowerCase().includes(q)
+    );
+  }, [filteredHistory, searchQuery]);
 
   // Aggregate metrics from real history (no artificial seed)
   const metrics = useMemo(() => {
@@ -312,6 +325,135 @@ function SingleEvalAnalytics({ history = [], modelFilter, setModelFilter }) {
                 </BarChart>
               </ResponsiveContainer>
             </div>
+          </div>
+
+          {/* Detailed Single Item Records Table */}
+          <div className="glass-card p-6">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+              <div>
+                <h3 className="text-base font-bold text-slate-800 dark:text-white">Single Evaluation Records</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Inspect individual response evaluations, verdicts, and dimension scores
+                </p>
+              </div>
+              <div className="relative">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search queries or responses..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="pl-8 pr-4 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 w-64"
+                />
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs text-left">
+                <thead className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 uppercase font-semibold">
+                  <tr>
+                    <th className="py-2.5 px-3">Date</th>
+                    <th className="py-2.5 px-3">Engine</th>
+                    <th className="py-2.5 px-3">Query</th>
+                    <th className="py-2.5 px-3 text-center">Claims</th>
+                    <th className="py-2.5 px-3 text-center">Hallucinations</th>
+                    <th className="py-2.5 px-3 text-center">Score</th>
+                    <th className="py-2.5 px-3 text-center">Verdict</th>
+                    <th className="py-2.5 px-3 text-center">Details</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
+                  {searchedHistory.slice(0, 20).map((item, idx) => {
+                    const isExpanded = expandedRow === idx;
+                    const itemScore = item.overallScore ?? item.overall_score ?? 0;
+                    const itemModel = item.model || (item.processing_time_ms ? 'NLP Backend' : 'JS Engine');
+                    const itemVerdict = item.label || item.verdict || (itemScore >= 70 ? 'Pass' : 'Fail');
+                    const itemHalluc = item.stats?.contradictory || 0;
+                    const itemColors = itemScore >= 90 ? 'text-emerald-500' : itemScore >= 75 ? 'text-blue-500' : itemScore >= 50 ? 'text-amber-500' : 'text-red-500';
+
+                    return (
+                      <React.Fragment key={item.id || idx}>
+                        <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                          <td className="py-2.5 px-3 whitespace-nowrap text-slate-400">
+                            {new Date(item.timestamp || Date.now()).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          </td>
+                          <td className="py-2.5 px-3">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+                              itemModel === 'NLP Backend'
+                                ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                            }`}>
+                              {itemModel}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3 max-w-xs font-medium text-slate-800 dark:text-slate-200 truncate">
+                            {item.query || '—'}
+                          </td>
+                          <td className="py-2.5 px-3 text-center font-bold">
+                            {item.claimsCount || item.claims?.length || 0}
+                          </td>
+                          <td className="py-2.5 px-3 text-center">
+                            <span className={`font-bold ${itemHalluc > 0 ? 'text-red-500' : 'text-emerald-500'}`}>
+                              {itemHalluc}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3 text-center">
+                            <span className={`font-extrabold ${itemColors}`}>
+                              {itemScore}/100
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3 text-center">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                              itemVerdict === 'Pass' || itemVerdict === 'PASS'
+                                ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
+                                : itemVerdict === 'Needs Improvement'
+                                ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
+                                : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+                            }`}>
+                              {itemVerdict}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3 text-center">
+                            <button
+                              onClick={() => setExpandedRow(isExpanded ? null : idx)}
+                              className="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold"
+                            >
+                              {isExpanded ? 'Hide' : 'Inspect'}
+                            </button>
+                          </td>
+                        </tr>
+
+                        {isExpanded && (
+                          <tr className="bg-slate-50/50 dark:bg-slate-800/30">
+                            <td colSpan={8} className="p-4 space-y-2">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                  <p className="font-semibold text-slate-500 mb-1">AI Response:</p>
+                                  <p className="bg-white dark:bg-slate-900 p-2.5 rounded border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-mono text-[11px] max-h-32 overflow-y-auto">
+                                    {item.aiResponse || item.ai_response || '—'}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="font-semibold text-slate-500 mb-1">Summary / Reasoning:</p>
+                                  <p className="bg-white dark:bg-slate-900 p-2.5 rounded border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs">
+                                    {item.summary || 'No summary available.'}
+                                  </p>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            {searchedHistory.length > 20 && (
+              <p className="text-xs text-center text-slate-400 mt-3">
+                Showing top 20 of {searchedHistory.length} records.
+              </p>
+            )}
           </div>
         </>
       )}
